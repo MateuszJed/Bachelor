@@ -13,6 +13,7 @@ lower_color, upper_color = Inital_color("redshit")
 flip_cam = True
 intel_cam = True
 detected = False
+Kp = 0.3
 
 #If IntelSense are not connecet switch to pc camera
 try:
@@ -41,6 +42,7 @@ def main():
     setp,con,watchdog,Init_pose = initial_communiation('169.254.182.10', 30004,500)
 
     v_0,v_2,t_0,t_1,t_f = 0    ,0,     0,      1.5,    0.75
+    refrence_point = 0
 
     start_time = time.time()
     watchdog.input_int_register_0 = 2
@@ -63,26 +65,31 @@ def main():
         x_send = _map(x_send,-width/2,width/2,-0.8,0.8)
         #y_send = _map(y_send,-height/2,height/2,100,500)
 
-        # Trajectory 
-        T = inital_parameters_traj(Init_pose[0],x_send,v_0,v_2,     0,      1.5,    0.75)
 
-        t = time.time() - start_time
-        if state.runtime_state > 1 and detected:
-            if watchdog.input_int_register_0 != 2:
-                watchdog.input_int_register_0 = 2
-                con.send(watchdog)  # sending mode == 4
-            q, dq, ddq = asym_trajectory(t)
-            # logging trajectory
-            Init_pose[0] = q
-            q1, q2, q3 = inverse_kinematic(Init_pose[0], Init_pose[1], Init_pose[2])
-            send_to_ur = [q1,q2,q3,-1.570796327,-3.141592654,1.570796327]
+        # PID
+        if refrence_point != 0:
+            error = (refrence_point-x_send)*-1
+            p_out = Kp*error
+            # Trajectory 
+            T = inital_parameters_traj(Init_pose[0],p_out,v_0,v_2,     0,      1.5,    0.75)
 
-            list_to_setp(setp, send_to_ur)
-            con.send(setp)  # sending new pose
-        else:
-            if watchdog.input_int_register_0 != 4:
-                watchdog.input_int_register_0 = 4
-                con.send(watchdog)  # sending mode == 4
+            t = time.time() - start_time
+            if state.runtime_state > 1 and detected:
+                if watchdog.input_int_register_0 != 2:
+                    watchdog.input_int_register_0 = 2
+                    con.send(watchdog)  # sending mode == 4
+                q, dq, ddq = asym_trajectory(t)
+                # logging trajectory
+                Init_pose[0] = q
+                q1, q2, q3 = inverse_kinematic(Init_pose[0], Init_pose[1], Init_pose[2])
+                send_to_ur = [q1,q2,q3,-1.570796327,-3.141592654,1.570796327]
+
+                list_to_setp(setp, send_to_ur)
+                con.send(setp)  # sending new pose
+            else:
+                if watchdog.input_int_register_0 != 4:
+                    watchdog.input_int_register_0 = 4
+                    con.send(watchdog)  # sending mode == 4
 
         cv2.imshow("Result", image)
 
@@ -97,8 +104,10 @@ def main():
             con.send(watchdog)
             con.send_pause()
             con.disconnect()
+            break
+        if cv2.waitKey(1) == ord("k"):
+            refrence_point = Init_pose[0]
 
-            break   
 
 if __name__ == '__main__':
     main()
