@@ -18,7 +18,7 @@ def setp_to_list(setp):
         temp.append(setp.__dict__["input_double_register_%i" % i])
     return temp
 
-
+#HElllo
 def list_to_setp(setp, list):
     for i in range(0, 6):
         setp.__dict__["input_double_register_%i" % i] = list[i]
@@ -30,7 +30,7 @@ w = np.linspace(0, 2, 1000)
 # ------------- robot communication stuff -----------------
 ROBOT_HOST = '169.254.182.10'
 ROBOT_PORT = 30004
-config_filename = r'D:\OneDrive - NTNU\Programmering\Python\Prosjekt\Bachelor\Source\Scripts\control_loop_configuration_simple.xml'  # specify xml file for data synchronization
+config_filename = r'D:\OneDrive - NTNU\Programmering\Python\Prosjekt\Bachelor\Source\Bachelor\Scripts\control_loop_configuration_simple.xml'  # specify xml file for data synchronization
 
 logging.getLogger().setLevel(logging.INFO)
 
