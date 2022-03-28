@@ -18,7 +18,6 @@ def setp_to_list(setp):
         temp.append(setp.__dict__["input_double_register_%i" % i])
     return temp
 
-#HElllo
 def list_to_setp(setp, list):
     for i in range(0, 6):
         setp.__dict__["input_double_register_%i" % i] = list[i]
