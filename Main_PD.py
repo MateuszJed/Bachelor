@@ -13,7 +13,6 @@ lower_color, upper_color = Inital_color("redshit")
 flip_cam = True
 intel_cam = True
 detected = False
-run = True
 
 #If IntelSense are not connecet switch to pc camera
 try:
@@ -46,7 +45,8 @@ def main():
     start_time = time.time()
     watchdog.input_int_register_0 = 2
     con.send(watchdog)  # sending mode == 2
-    while run:
+    state = con.receive()
+    while state.runtime_state > 1:
         if intel_cam:
             frames = pipeline.wait_for_frames()
             color_frame = frames.get_color_frame()
@@ -64,10 +64,8 @@ def main():
         #y_send = _map(y_send,-height/2,height/2,100,500)
 
         # Trajectory 
-
         T = inital_parameters_traj(Init_pose[0],x_send,v_0,v_2,     0,      1.5,    0.75)
 
-        state = con.receive()
         t = time.time() - start_time
         if state.runtime_state > 1 and detected:
             if watchdog.input_int_register_0 != 2:
