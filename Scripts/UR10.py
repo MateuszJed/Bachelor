@@ -7,7 +7,7 @@ import rtde.rtde_config as rtde_config
 def initial_communiation(Robot_IP,Robot_Port,FREQUENCY):
     ROBOT_HOST = Robot_IP
     ROBOT_PORT = Robot_Port
-    config_filename = 'Prosjekt\Bachelor\Source\Scripts\control_loop_configuration_simple.xml'
+    config_filename = r'D:\OneDrive - NTNU\Programmering\Python\Prosjekt\Bachelor\Source\Bachelor\Scripts\control_loop_configuration_simple.xml'
 
     logging.getLogger().setLevel(logging.INFO)
 
