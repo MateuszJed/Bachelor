@@ -71,7 +71,7 @@ def main():
             error = (refrence_point-x_send)*-1
             p_out = Kp*error
             # Trajectory 
-            T = inital_parameters_traj(Init_pose[0],p_out,v_0,v_2,     0,      1.5,    0.75)
+            T = inital_parameters_traj(Init_pose[0],x_send,v_0,v_2,     0,      1.5,    0.75)
 
             t = time.time() - start_time
             if state.runtime_state > 1 and detected:
