@@ -6,15 +6,15 @@ import cv2
 import torch
 from matplotlib import pyplot as plt
 # Configure depth and color streams
-pipeline = rs.pipeline()
-config = rs.config()
+# pipeline = rs.pipeline()
+# config = rs.config()
 
-pipeline = rs.pipeline()
-config = rs.config()
-config.enable_stream(rs.stream.color, 1280, 720, rs.format.bgr8, 30)
-pipeline.start(config)
+# pipeline = rs.pipeline()
+# config = rs.config()
+# config.enable_stream(rs.stream.color, 1280, 720, rs.format.bgr8, 30)
+# pipeline.start(config)
 
-# cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(0)
 def colorCalibration():
     """Defining color and save as list to the path.
     Define path to list for save """
@@ -39,12 +39,12 @@ def colorCalibration():
     while True:
         # Take each frame
 
-        frames = pipeline.wait_for_frames()
-        color_frame = frames.get_color_frame()
+        # frames = pipeline.wait_for_frames()
+        # color_frame = frames.get_color_frame()
 
-        # Convert images to numpy arrays
-        image = np.asanyarray(color_frame.get_data())
-        # succes, image = cap.read()
+        # # Convert images to numpy arrays
+        # image = np.asanyarray(color_frame.get_data())
+        succes, image = cap.read()
         	
         image = cv2.flip(image, 0)
         hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
@@ -74,7 +74,7 @@ def colorCalibration():
         colorlist = [l_h,l_s,l_v,u_h,u_s,u_v]
     
         if cv2.waitKey(1) == 27:  # Break loop with ESC-key
-            with open(r"D:\OneDrive - NTNU\Programmering\Python\Prosjekt\Bachelor\Source\Color_data_set\{}.txt".format(nameOfList), "w") as f:
+            with open(r"D:\OneDrive - NTNU\Programmering\Python\Prosjekt\Bachelor\Source\Bachelor\Color_data_set\{}.txt".format(nameOfList), "w") as f:
               for s in colorlist:
                 f.write(str(s) +",")
             break
@@ -83,21 +83,46 @@ def videoCalibration():
     """ Calibration center of body."""
     color_list = []
     name_of_list = input("Name of list: ")
-    with open(r"D:\OneDrive - NTNU\Programmering\Python\Prosjekt\Bachelor\Source\Color_data_set\{}.txt".format(name_of_list), "r") as f:
+    with open(r"D:\OneDrive - NTNU\Programmering\Python\Prosjekt\Bachelor\Source\Bachelor\Color_data_set\{}.txt".format(name_of_list), "r") as f:
       for line in f:
         x = line.split(",")
         for i in x:
             if i.isdigit():
                 color_list.append(int(i))
+    flip_cam = True
+    intel_cam = True
+    detected = False
+    try:
+      pipeline = rs.pipeline()
+      config = rs.config()
+      config.enable_stream(rs.stream.color, 1280, 720, rs.format.bgr8, 30)
+      pipeline.start(config)
+    except RuntimeError as info:
+      if str(info) == "No device connected":
+          cap = cv2.VideoCapture(0)
+          succes, image = cap.read()
+          height, width, channels = image.shape
+          intel_cam = False
+    if intel_cam:
+        # Get information from IntelSens camera
+        frames = pipeline.wait_for_frames()
+        color_frame = frames.get_color_frame()
+
+        image = np.asanyarray(color_frame.get_data())
+        height = image.shape[0]
+        width = image.shape[1]
 
     lower_color = np.array(color_list[:3])
     upper_color = np.array(color_list[3:])
     while True:
-        frames = pipeline.wait_for_frames()
-        color_frame = frames.get_color_frame()
+        if intel_cam:
+          frames = pipeline.wait_for_frames()
+          color_frame = frames.get_color_frame()
 
-        # Convert images to numpy arrays
-        image = np.asanyarray(color_frame.get_data())
+          # Convert images to numpy arrays
+          image = np.asanyarray(color_frame.get_data())
+        else:
+          succes, image = cap.read()
         hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
         # Convert RGB to HSV
         hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
