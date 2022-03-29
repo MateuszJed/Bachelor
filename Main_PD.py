@@ -1,3 +1,6 @@
+"""
+Code written based on servoj example from: https://github.com/davizinho5/RTDE_control_example
+"""
 import cv2,math,torch,sys,asyncio,logging,time
 import pyrealsense2 as rs
 import numpy as np
@@ -12,8 +15,8 @@ lower_color, upper_color = Inital_color("yellowbox")
 flip_cam = True
 intel_cam = True
 detected = False
-Kp = 0.3
-
+Kp = 0.5
+kd = 0.1
 #If IntelSense are not connecet switch to pc camera
 try:
     pipeline = rs.pipeline()
@@ -25,7 +28,6 @@ except RuntimeError as info:
         cap = cv2.VideoCapture(0)
         succes, image = cap.read()
         height, width, channels = image.shape
-        print(height, width)
         intel_cam = False
 if intel_cam:
     # Get information from IntelSens camera
@@ -46,6 +48,7 @@ def main():
     watchdog.input_int_register_0 = 2
     con.send(watchdog)  # sending mode == 2
     state = con.receive()
+    prev_error = 0
     while 1:
         if intel_cam:
             frames = pipeline.wait_for_frames()
@@ -61,19 +64,18 @@ def main():
         #Constrain values from camera 
         x_send = _map(x_send,-width/2,width/2,-0.7,0.7)
         #y_send = _map(y_send,-height/2,height/2,100,500)
-
         cv2.imshow("Result", image)
         if reference_point != 0:
             #PID
             error = (reference_point-x_send)*-1
-            P_out = Kp*error
-
+            P_out = Kp*error+kd*(error-prev_error)
+            
             # Trajectory 
 
             T = inital_parameters_traj(Init_pose[0],P_out,0    ,0,     0,      1.5,    0.75)
 
-            state = con.receive()
             t = time.time() - start_time
+            state = con.receive()
             if state.runtime_state > 1 and detected:
                 if watchdog.input_int_register_0 != 2:
                     watchdog.input_int_register_0 = 2
@@ -97,6 +99,7 @@ def main():
             v_2 = v_0
             Init_pose[0] = P_out
             start_time = time.time()
+            prev_error = error
             if cv2.waitKey(1) == 27:  # Break loop with ESC-key
                 state = con.receive()
                 # ====================mode 3===================
@@ -108,42 +111,6 @@ def main():
                 break   
         if cv2.waitKey(1) == ord("k"):
             reference_point = Init_pose[0]
+            print("Reference point its ready")
 if __name__ == '__main__':
     main()
-    
-    # setp,con,watchdog,Initial_pose = initial_communiation('169.254.182.10', 30004,500)
-
-    # watchdog.input_int_register_0 = 2
-    # con.send(watchdog)  # sending mode == 2
-    # Init_pose = [-0.012687318175246987, 0.6870381118043345, 0.7403751487516523, -1.2215629305198221, 1.199165039620324, -1.1935355139916901]
-    # Final_pose = [0.5077415367274349, 0.8677513175760304, 0.620792500956789, -1.6518454739898978, 1.3587417129274773, -1.980812429926074]
-
-    # # #   -------------------------Control loop --------------------
-    # #insert inital parametes: (q_0,q_1,v_0,v_2,t_0,t_1,t_f)
-    # T = inital_parameters_traj(Init_pose[0],Final_pose[0],0,0,0,1.5,0.75)
-
-    # start_time = time.time()
-    # while time.time() - start_time < T:
-    #     state = con.receive()
-    #     # print(state.actual_TCP_pose)
-    #     t = time.time() - start_time
-    #     if state.runtime_state > 1:
-    #         # calculation of trajectory
-    #         q, dq, ddq = asym_trajectory(t)
-    #         # logging trajectory
-    #         Init_pose[0] = q
-    #         q1, q2, q3 = inverse_kinematic(Init_pose[0], Init_pose[1], Init_pose[2])
-    #         send_to_ur = [q1,q2,q3,-1.570796327,-3.141592654,1.570796327]
-
-    #         list_to_setp(setp, send_to_ur)
-    #         con.send(setp)  # sending new pose
-
-    # state = con.receive()
-
-    # # ====================mode 3===================
-    # watchdog.input_int_register_0 = 3
-    # con.send(watchdog)
-
-    # con.send_pause()
-    # con.disconnect()
-    
