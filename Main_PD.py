@@ -73,7 +73,7 @@ def main():
             #PID
             error = (reference_point-x_send)*-1
             P_out = Kp*error+kd*(error-prev_error)
-            LOG_P_OUT.append(P_out)
+            LOG_P_OUT.append(x)
             
             # Trajectory 
 
