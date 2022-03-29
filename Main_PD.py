@@ -48,6 +48,7 @@ def main():
     watchdog.input_int_register_0 = 2
     con.send(watchdog)  # sending mode == 2
     state = con.receive()
+    print("Send mode 2")
     while state.runtime_state > 1:
         if intel_cam:
             frames = pipeline.wait_for_frames()
