@@ -9,6 +9,7 @@ from Scripts.Camera import ObjectDetection,Inital_color
 from Scripts.miscellaneous import _map,setp_to_list,list_to_setp
 from Scripts.UR10 import initial_communiation
 from Scripts.trajectory import asym_trajectory, log_traj, plot_traj ,inital_parameters_traj
+import matplotlib.pyplot as plt
 
 lower_color, upper_color = Inital_color("yellowbox")
 
@@ -49,6 +50,9 @@ def main():
     con.send(watchdog)  # sending mode == 2
     state = con.receive()
     prev_error = 0
+    LOG_x = []
+    LOG_t = []
+    LOG_P_OUT = []
     while 1:
         if intel_cam:
             frames = pipeline.wait_for_frames()
@@ -69,6 +73,7 @@ def main():
             #PID
             error = (reference_point-x_send)*-1
             P_out = Kp*error+kd*(error-prev_error)
+            LOG_P_OUT.append(P_out)
             
             # Trajectory 
 
@@ -97,9 +102,11 @@ def main():
 
             v_0 = state.actual_TCP_speed[0]
             v_2 = v_0
+            LOG_x.append(Init_pose[0])
             Init_pose[0] = P_out
             start_time = time.time()
             prev_error = error
+            LOG_t.append(start_time)
             if cv2.waitKey(1) == 27:  # Break loop with ESC-key
                 state = con.receive()
                 # ====================mode 3===================
@@ -107,10 +114,14 @@ def main():
                 con.send(watchdog)
                 con.send_pause()
                 con.disconnect()
-
                 break   
         if cv2.waitKey(1) == ord("k"):
             reference_point = Init_pose[0]
             print("Reference point its ready")
+    plt.figure("Position of x")
+    plt.plot(LOG_t,LOG_x)
+    plt.figure("P_out")
+    plt.plot(LOG_t,LOG_P_OUT)
+    plt.show()
 if __name__ == '__main__':
     main()
