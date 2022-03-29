@@ -39,14 +39,13 @@ if intel_cam:
 def main():
     # Client has a few methods to get proxy to UA nodes that should always be in address space such as Root or Objects
     setp,con,watchdog,Init_pose = initial_communiation('169.254.182.10', 30004,500)
-
     v_0,v_2,t_0,t_1,t_f = 0    ,0,     0,      1.5,    0.75
 
     start_time = time.time()
     watchdog.input_int_register_0 = 2
     con.send(watchdog)  # sending mode == 2
     state = con.receive()
-    while state.runtime_state > 1:
+    while 1:
         if intel_cam:
             frames = pipeline.wait_for_frames()
             color_frame = frames.get_color_frame()
@@ -56,7 +55,6 @@ def main():
         else:
             #Read pc camera
             success, image = cap.read()
-        
         #Object detection
         x_send, y_send, mask,image,detected = ObjectDetection(image,lower_color, upper_color,height,width,flip_cam)
         #Constrain values from camera 
@@ -101,7 +99,7 @@ def main():
             con.disconnect()
 
             break   
-
+            
 if __name__ == '__main__':
     main()
     
