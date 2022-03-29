@@ -1,4 +1,4 @@
-import sys
+import sys,time
 sys.path.append('')
 import logging
 import rtde.rtde as rtde
@@ -32,12 +32,12 @@ def initial_communiation(Robot_IP,Robot_Port,FREQUENCY):
     watchdog = con.send_input_setup(watchdog_names, watchdog_types)
 
     # ---------------------registers:-------------------------------
-    setp.input_double_register_0 = 0
-    setp.input_double_register_1 = 0
-    setp.input_double_register_2 = 0
-    setp.input_double_register_3 = 0
-    setp.input_double_register_4 = 0
-    setp.input_double_register_5 = 0
+    setp.input_double_register_0 = -1.57
+    setp.input_double_register_1 = -1.57
+    setp.input_double_register_2 = 1.57
+    setp.input_double_register_3 = -1.57
+    setp.input_double_register_4 = -3.14
+    setp.input_double_register_5 = 1.57
 
     setp.input_bit_registers0_to_31 = 0
 
@@ -52,6 +52,8 @@ def initial_communiation(Robot_IP,Robot_Port,FREQUENCY):
         print(f"Runtime state is {state.runtime_state}")
         if state.output_bit_registers0_to_31 == True:
             print('Boolean 1 is True, Robot Program can proceed to mode 1\n')
+            con.send(setp)
+            time.sleep(0.01)
             break
     return setp,con,watchdog,state.actual_TCP_pose[:3]
 # # initial_communiation('169.254.182.10', 30004)
