@@ -8,7 +8,7 @@ from Scripts.miscellaneous import _map,setp_to_list,list_to_setp
 from Scripts.UR10 import initial_communiation
 from Scripts.trajectory import asym_trajectory, log_traj, plot_traj ,inital_parameters_traj
 
-lower_color, upper_color = Inital_color("redshit")
+lower_color, upper_color = Inital_color("yellowbox")
 
 flip_cam = True
 intel_cam = True
@@ -60,12 +60,12 @@ def main():
         #Object detection
         x_send, y_send, mask,image,detected = ObjectDetection(image,lower_color, upper_color,height,width,flip_cam)
         #Constrain values from camera 
-        x_send = _map(x_send,-width/2,width/2,-0.8,0.8)
-        #y_send = _map(y_send,-height/2,height/2,100,500)
+        x_send = _map(x_send,-width/2,width/2,0.25,0.8)
+        #y_send = _map(y_send,-width/2,width/2,-0.8,0.8)
 
         # Trajectory 
 
-        T = inital_parameters_traj(Init_pose[0],x_send,v_0,v_2,     0,      1.5,    0.75)
+        T = inital_parameters_traj(Init_pose[1],x_send,v_0,v_2,     0,      1.5,    0.75)
 
         state = con.receive()
         t = time.time() - start_time
@@ -75,7 +75,7 @@ def main():
                 con.send(watchdog)  # sending mode == 4
             q, dq, ddq = asym_trajectory(t)
             # logging trajectory
-            Init_pose[0] = q
+            Init_pose[1] = q
             q1, q2, q3 = inverse_kinematic(Init_pose[0], Init_pose[1], Init_pose[2])
             send_to_ur = [q1,q2,q3,-1.570796327,-3.141592654,1.570796327]
 
@@ -90,7 +90,7 @@ def main():
 
         v_0 = state.actual_TCP_speed[0]
         v_2 = v_0
-        Init_pose[0] = x_send
+        Init_pose[1] = x_send
         start_time = time.time()
         if cv2.waitKey(1) == 27:  # Break loop with ESC-key
             state = con.receive()
@@ -104,40 +104,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-    
-    # setp,con,watchdog,Initial_pose = initial_communiation('169.254.182.10', 30004,500)
-
-    # watchdog.input_int_register_0 = 2
-    # con.send(watchdog)  # sending mode == 2
-    # Init_pose = [-0.012687318175246987, 0.6870381118043345, 0.7403751487516523, -1.2215629305198221, 1.199165039620324, -1.1935355139916901]
-    # Final_pose = [0.5077415367274349, 0.8677513175760304, 0.620792500956789, -1.6518454739898978, 1.3587417129274773, -1.980812429926074]
-
-    # # #   -------------------------Control loop --------------------
-    # #insert inital parametes: (q_0,q_1,v_0,v_2,t_0,t_1,t_f)
-    # T = inital_parameters_traj(Init_pose[0],Final_pose[0],0,0,0,1.5,0.75)
-
-    # start_time = time.time()
-    # while time.time() - start_time < T:
-    #     state = con.receive()
-    #     # print(state.actual_TCP_pose)
-    #     t = time.time() - start_time
-    #     if state.runtime_state > 1:
-    #         # calculation of trajectory
-    #         q, dq, ddq = asym_trajectory(t)
-    #         # logging trajectory
-    #         Init_pose[0] = q
-    #         q1, q2, q3 = inverse_kinematic(Init_pose[0], Init_pose[1], Init_pose[2])
-    #         send_to_ur = [q1,q2,q3,-1.570796327,-3.141592654,1.570796327]
-
-    #         list_to_setp(setp, send_to_ur)
-    #         con.send(setp)  # sending new pose
-
-    # state = con.receive()
-
-    # # ====================mode 3===================
-    # watchdog.input_int_register_0 = 3
-    # con.send(watchdog)
-
-    # con.send_pause()
-    # con.disconnect()
-    
