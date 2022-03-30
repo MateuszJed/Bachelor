@@ -63,12 +63,12 @@ def main():
         #Object detection
         x_send, y_send, mask,image,detected = ObjectDetection(image,lower_color, upper_color,height,width,flip_cam)
         #Constrain values from camera 
-        x_send = _map(x_send,-width/2,width/2,-0.7,0.7)
+        x_send = _map(x_send,-width/2,width/2,-0.7,0.7)*-1
         #y_send = _map(y_send,-height/2,height/2,100,500)
         cv2.imshow("Result", image)
         if reference_point != 0:
             #PID
-            error = (reference_point-x_send)*-1
+            error = (reference_point-x_send)
             P_out = Kp*error+kd*(error-prev_error)
             
             # Trajectory 
