@@ -11,10 +11,10 @@ def inverse_kinematic(x_cord, y_cord,z_cord):
     q2pn = -1
 
     q1 = atan2(y_cord,x_cord)
-    if y_cord >= 0:
-        q1 = q1 - pi
-    else:
+    if y_cord <= 0:
         q1 = q1 + pi
+    else:
+        q1 = q1 - pi
 
     c3 = ((x_cord**2+y_cord**2+z_cord**2-(d[0]**2+a[2]**2+a[3]**2)-2*d[0]*(z_cord-d[0]))/(2*a[2]*a[3]))
 

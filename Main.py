@@ -58,12 +58,13 @@ def main():
         #Object detection
         x_send, y_send, mask,image,detected = ObjectDetection(image,lower_color, upper_color,height,width,flip_cam)
         #Constrain values from camera 
-        x_send = _map(x_send,-width/2,width/2,-0.7,0.7)
+        print(x_send)
+        x_send = _map(x_send,-width/2,width/2,-0.4,0.4)*-1
         #y_send = _map(y_send,-height/2,height/2,100,500)
 
         # Trajectory 
 
-        T = inital_parameters_traj(Init_pose[0],x_send,0    ,0,     0,      1.5,    0.75)
+        T = inital_parameters_traj(Init_pose[0],x_send,v_0,v_2,     0,      1.5,    0.75)
 
         state = con.receive()
         t = time.time() - start_time
