@@ -11,7 +11,7 @@ from Scripts.UR10 import initial_communiation
 from Scripts.trajectory import asym_trajectory, log_traj, plot_traj ,inital_parameters_traj
 import matplotlib.pyplot as plt
 
-lower_color, upper_color = Inital_color("redshit_pc")
+lower_color, upper_color = Inital_color("yellowbox")
 
 flip_cam = True
 intel_cam = True
