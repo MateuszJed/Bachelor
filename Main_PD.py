@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 
 lower_color, upper_color = Inital_color("yellowbox")
 
-flip_cam = True
+flip_cam = False
 intel_cam = True
 detected = False
 Kp = 0.5
@@ -63,7 +63,7 @@ def main():
         #Object detection
         x_send, y_send, mask,image,detected = ObjectDetection(image,lower_color, upper_color,height,width,flip_cam)
         #Constrain values from camera 
-        x_send = _map(x_send,-width/2,width/2,-0.7,0.7)*-1
+        x_send = _map(x_send,-width/2,width/2,-1,1)*-1
         #y_send = _map(y_send,-height/2,height/2,100,500)
         cv2.imshow("Result", image)
         if reference_point != 0:
