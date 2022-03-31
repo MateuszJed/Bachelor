@@ -2,58 +2,33 @@ import math
 from math import asin, acos, atan2, pi,atan
 from cmath import sqrt
 
-def inverse_kinematic(x_cord, y_cord,z_cord):
-    alpha = [0,pi/2, 0, 0]
-    d = [0.128,0,0,0.0125]
-    a = [0,0,-0.612,-0.68759]
-
-    s3pn = 1
-    q2pn = -1
-
-    q1 = atan2(y_cord,x_cord)
-    if y_cord >= 0:
-        q1 = q1 - pi
-    else:
-        q1 = q1 + pi
-
-    c3 = ((x_cord**2+y_cord**2+z_cord**2-(d[0]**2+a[2]**2+a[3]**2)-2*d[0]*(z_cord-d[0]))/(2*a[2]*a[3]))
-
-    s3 = sqrt(1-c3)
-
-
-
-    s3 = s3.real
-    q3 = atan2(s3,c3)
-
-    k1 = (c3*a[3]+a[2])
-    k2 = (s3*a[3])
-
-    A = -2*k1*(d[0]-z_cord)
-    B = (2*k1*(d[0]-z_cord))**2-4*(k1**2+k2**2)*(z_cord**2+d[0]**2-k2**2-2*z_cord*d[0])#Kanskje slutt her e fukka -2*z_cord*d[0]
-    q2 = asin((A-math.sqrt(B))/(2*(k1**2+k2**2)))
-
-    return q1,q2,q3
-    #angle = [q1*180/pi,q2*180/pi,q3*180/pi]
-
-def inverse_kinematic_2(x_position, y_position,z_position):
+def inverse_kinematic(x_position, y_position,z_position):
 
     d = [0.1273]
     a = [0,0,0.612, 0.688]
 
     r1 = sqrt(x_position**2+y_position**2)
+    r1 = r1.real
     r2 = z_position-d[0]
     r3 = sqrt(r2**2+r1**2)
+    r3 = r3.real
 
-    omega_1 = -atan2(r2,r1)*180/pi
+    omega_1 = -atan2(r2,r1)
     omgea_2 = -acos(((a[2]**2)+(r3**2)-(a[3]**2))/(2*a[2]*r3))
     omgea_3 = acos(((a[2]**2)+(a[3]**2)-(r3**2))/(2*a[2]*a[3]))
 
     q1 = atan2(y_position, x_position)
+    q1 = q1.real
+
+    if y_position <= 0:
+        q1 = q1 +pi
+    else:
+        q1 = q1 -pi
 
     q2 = omega_1+omgea_2
-    q2 = q2.real()
+    q2 = q2.real
 
     q3 = pi-omgea_3
-    q3 = q3.real()
+    q3 = q3.real
 
     return q1,q2,q3
