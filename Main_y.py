@@ -1,13 +1,13 @@
 import cv2,math,torch,sys,asyncio,logging,time
 import pyrealsense2 as rs
 import numpy as np
-from Scripts.Kinematic import inverse_kinematic
+from Scripts.Kinematic import inverse_kinematic, inverse_kinematic_2
 from Scripts.Camera import ObjectDetection,Inital_color
 from Scripts.miscellaneous import _map,setp_to_list,list_to_setp
 from Scripts.UR10 import initial_communiation
 from Scripts.trajectory import asym_trajectory, log_traj, plot_traj ,inital_parameters_traj
 
-lower_color, upper_color = Inital_color("redshit")
+lower_color, upper_color = Inital_color("yellowbox")
 
 flip_cam = False
 intel_cam = True
@@ -58,12 +58,12 @@ def main():
         #Object detection
         x_send, y_send, mask,image,detected = ObjectDetection(image,lower_color, upper_color,height,width,flip_cam)
         #Constrain values from camera 
-        x_send = _map(x_send,-width/2,width/2,-0.7,0.7)
+        x_send = _map(x_send,-width/2,width/2,-1,-0.3)
         #y_send = _map(y_send,-height/2,height/2,100,500)
 
         # Trajectory 
 
-        T = inital_parameters_traj(Init_pose[0],x_send,v_0,v_2,     0,      1.5,    0.75)
+        T = inital_parameters_traj(Init_pose[1],x_send,v_0,v_2,     0,      1.5,    0.75)
 
         state = con.receive()
         t = time.time() - start_time
@@ -73,8 +73,8 @@ def main():
                 con.send(watchdog)  # sending mode == 4
             q, dq, ddq = asym_trajectory(t)
             # logging trajectory
-            Init_pose[0] = q
-            q1, q2, q3 = inverse_kinematic(Init_pose[0], Init_pose[1], Init_pose[2])
+            Init_pose[1] = q
+            q1, q2, q3 = inverse_kinematic_2(Init_pose[0], Init_pose[1], Init_pose[2])
             send_to_ur = [q1,q2,q3,-1.570796327,-3.141592654,1.570796327]
 
             list_to_setp(setp, send_to_ur)
@@ -88,7 +88,7 @@ def main():
 
         v_0 = state.actual_TCP_speed[0]
         v_2 = v_0
-        Init_pose[0] = x_send
+        Init_pose[1] = x_send
         start_time = time.time()
         if cv2.waitKey(1) == 27:  # Break loop with ESC-key
             state = con.receive()
