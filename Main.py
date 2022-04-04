@@ -58,7 +58,7 @@ def main():
         #Object detection
         x_send, y_send, mask,image,detected = ObjectDetection(image,lower_color, upper_color,height,width,flip_cam)
         #Constrain values from camera 
-        x_send = _map(x_send,-width/2,width/2,-1,-0.3)
+        x_send = _map(x_send,-width/2,width/2,-0.8,0.8)
         print(x_send)
         #y_send = _map(y_send,-height/2,height/2,100,500)
 
@@ -89,7 +89,7 @@ def main():
 
         v_0 = state.actual_TCP_speed[0]
         v_2 = v_0
-        Init_pose[1] = x_send
+        Init_pose[0] = x_send
         start_time = time.time()
         if cv2.waitKey(1) == 27:  # Break loop with ESC-key
             state = con.receive()
