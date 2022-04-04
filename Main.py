@@ -7,9 +7,9 @@ from Scripts.miscellaneous import _map,setp_to_list,list_to_setp
 from Scripts.UR10 import initial_communiation
 from Scripts.trajectory import asym_trajectory, log_traj, plot_traj ,inital_parameters_traj
 
-lower_color, upper_color = Inital_color("redshit")
+lower_color, upper_color = Inital_color("yellowbox")
 
-flip_cam = True
+flip_cam = False
 intel_cam = True
 detected = False
 run = True
