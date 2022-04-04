@@ -4,7 +4,7 @@ import numpy as np
 def Inital_color(name_of_list):
     # """ Calibration center of body."""
     color_list = []
-    with open(r"D:\OneDrive - NTNU\Programmering\Python\Prosjekt\Bachelor\Source\Bachelor\Color_data_set\{}.txt".format(name_of_list), "r") as f:
+    with open(r"C:\Users\mateusz.jedynak\OneDrive - NTNU\Programmering\Python\Prosjekt\Bachelor\Source\Bachelor\Color_data_set\{}.txt".format(name_of_list), "r") as f:
         for line in f:
             x = line.split(",")
             for i in x:
