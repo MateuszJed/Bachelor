@@ -56,9 +56,10 @@ def main():
             #Read pc camera
             success, image = cap.read()
         #Object detection
-        x_send, y_send, mask,image,detected = ObjectDetection(image,lower_color, upper_color,height,width,flip_cam)
+        x_send, y_send,distance,image, mask, depth, detected = ObjectDetection(image, depth_frame,depth, lower_color, upper_color, height, width, flip_cam)
+        # x_send, y_send, mask,image,detected = ObjectDetection(image,lower_color, upper_color,height,width,flip_cam)
         #Constrain values from camera 
-        x_send = _map(x_send,-width/2,width/2,-0.6,-1)
+        x_send = _map(x_send,-width/2,width/2,-0.4,-1.3)
         #y_send = _map(y_send,-height/2,height/2,100,500)
         print(x_send)
 
