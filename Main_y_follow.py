@@ -72,9 +72,9 @@ def main():
         x_send, y_send,distance,image, mask, depth, detected = ObjectDetection(image, depth_frame,depth, lower_color, upper_color, height, width, flip_cam)
         # x_send, y_send, mask,image,detected = ObjectDetection(image,lower_color, upper_color,height,width,flip_cam)
         #Constrain values from camera 
-        x_send = _map(x_send,-width/2,width/2,-0.5,-1)
+        x_send = _map(x_send,-width/2,width/2,-0.6,-1)
         #y_send = _map(y_send,-height/2,height/2,100,500)
-        print(distance,x_send,Init_pose)
+        print(distance,x_send,Init_pose,regulation)
         cv2.imshow("Result", image)
         # Trajectory 
 
@@ -90,7 +90,7 @@ def main():
             # logging trajectory
             Init_pose[regulation] = q
             q1, q2, q3 = inverse_kinematic(Init_pose[0], Init_pose[1], Init_pose[2])
-            q6 = q2+ q3 + math.pi/2
+            # q6 = q2+ q3 + math.pi/2
             send_to_ur = [q1,q2,q3,-1.570796327,-3.141592654,1.570796327]
             # send_to_ur = [q1,q2,q3,-1.570796327,-3.141592654,q6]
 
