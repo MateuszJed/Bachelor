@@ -65,45 +65,51 @@ def main():
         #y_send = _map(y_send,-height/2,height/2,100,500)
         print(x_send)
         cv2.imshow("Result", image)
-    
-        # Trajectory 
+        if reference_point != 0:
+            #PID
+            error = (reference_point-x_send)
+            P_out = Kp*error+kd*(error-prev_error)
+            
+            # Trajectory 
 
-        T = inital_parameters_traj(Init_pose[0],x_send,v_0,v_2,     0,      1.5,   0.7)
+            T = inital_parameters_traj(Init_pose[0],P_out,0    ,0,     0,      1.5,    0.75)
 
-        t = time.time() - start_time
-        state = con.receive()
-        if state.runtime_state > 1 and detected:
-            if watchdog.input_int_register_0 != 2:
-                watchdog.input_int_register_0 = 2
-                con.send(watchdog)  # sending mode == 4
-            q, dq, ddq = asym_trajectory(t)
-            # logging trajectory
-            Init_pose[0] = x_send
-            q1, q2, q3 = inverse_kinematic(Init_pose[0], Init_pose[1], Init_pose[2])
-
-            #90 degree on endeffector
-            #q6 = q2+q3+pi/2
-            send_to_ur = [q1,q2,q3,-1.570796327,-3.141592654,1.570796327]
-            # send_to_ur = [q1,q2,q3,-1.570796327,-3.141592654,q6]
-
-            list_to_setp(setp, send_to_ur)
-            con.send(setp)  # sending new pose
-        else:
-            if watchdog.input_int_register_0 != 4:
-                watchdog.input_int_register_0 = 4
-                con.send(watchdog)  # sending mode == 4
-
-        v_0 = state.actual_TCP_speed[0]
-        v_2 = v_0
-        Init_pose[0] = x_send
-        start_time = time.time()
-        if cv2.waitKey(1) == 27:  # Break loop with ESC-key
+            t = time.time() - start_time
             state = con.receive()
-            # ====================mode 3===================
-            watchdog.input_int_register_0 = 3
-            con.send(watchdog)
-            con.send_pause()
-            con.disconnect()
-            break   
+            if state.runtime_state > 1 and detected:
+                if watchdog.input_int_register_0 != 2:
+                    watchdog.input_int_register_0 = 2
+                    con.send(watchdog)  # sending mode == 4
+                q, dq, ddq = asym_trajectory(t)
+                # logging trajectory
+                Init_pose[0] = q
+                q1, q2, q3 = inverse_kinematic(Init_pose[0], Init_pose[1], Init_pose[2])
+                send_to_ur = [q1,q2,q3,-1.570796327,-3.141592654,1.570796327]
+
+                list_to_setp(setp, send_to_ur)
+                con.send(setp)  # sending new pose
+            else:
+                if watchdog.input_int_register_0 != 4:
+                    watchdog.input_int_register_0 = 4
+                    con.send(watchdog)  # sending mode == 4
+
+            
+
+            v_0 = state.actual_TCP_speed[0]
+            v_2 = v_0
+            Init_pose[0] = P_out
+            start_time = time.time()
+            prev_error = error
+            if cv2.waitKey(1) == 27:  # Break loop with ESC-key
+                state = con.receive()
+                # ====================mode 3===================
+                watchdog.input_int_register_0 = 3
+                con.send(watchdog)
+                con.send_pause()
+                con.disconnect()
+                break   
+        if cv2.waitKey(1) == ord("k"):
+            reference_point = Init_pose[0]
+            print("Reference point its ready")
 if __name__ == '__main__':
     main()
