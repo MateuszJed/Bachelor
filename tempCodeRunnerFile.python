@@ -1,8 +1,0 @@
-
-import math
-from math import asin, acos, atan2, pi
-from cmath import sqrt
-
-x = (0.6872033326174297+0j)
-
-print(x.real)
