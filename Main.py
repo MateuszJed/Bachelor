@@ -18,8 +18,11 @@ run = True
 try:
     pipeline = rs.pipeline()
     config = rs.config()
+    config.enable_stream(rs.stream.depth, 1280, 720, rs.format.z16, 30)
     config.enable_stream(rs.stream.color, 1280, 720, rs.format.bgr8, 30)
     pipeline.start(config)
+    align_to = rs.stream.depth
+    align = rs.align(align_to)
 except RuntimeError as info:
     if str(info) == "No device connected":
         cap = cv2.VideoCapture(0)
@@ -31,7 +34,6 @@ if intel_cam:
     # Get information from IntelSens camera
     frames = pipeline.wait_for_frames()
     color_frame = frames.get_color_frame()
-
     image = np.asanyarray(color_frame.get_data())
     height = image.shape[0]
     width = image.shape[1]
@@ -47,10 +49,14 @@ def main():
     state = con.receive()
     while 1:
         if intel_cam:
-            frames = pipeline.wait_for_frames()
-            color_frame = frames.get_color_frame()
-            # Convert images to numpy arrays
-            image = np.asanyarray(color_frame.get_data())
+            frames = pipeline.wait_for_frames() #
+
+            aligned_frames =  align.process(frames)
+            depth_frame = aligned_frames.get_depth_frame()
+            aligned_color_frame = aligned_frames.get_color_frame()
+
+            image = np.asanyarray(aligned_color_frame.get_data())
+            depth = np.asanyarray(depth_frame.get_data())
             hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
         else:
             #Read pc camera
