@@ -47,6 +47,8 @@ def main():
         x_pos, y_pos,distance,image, mask, depth, detected = ObjectDetection(image, depth_frame,depth, lower_color, upper_color, height, width, flip_cam)
         print(distance)
         cv2.imshow("Result", image)
+        cv2.imshow("Mask", mask)
+        cv2.imshow("Depth", depth)
         if cv2.waitKey(1) == 27:  # Break loop with ESC-key
             break   
 if __name__ == '__main__':

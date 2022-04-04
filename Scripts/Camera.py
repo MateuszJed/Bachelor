@@ -28,7 +28,7 @@ def ObjectDetection(image,depth_frame,depth,lower_color, upper_color,height,widt
     contours, hierarchy = cv2.findContours(dilation, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     if len(contours) > 0:
         box = max(contours, key=cv2.contourArea)
-        if cv2.contourArea(box) > 2000:
+        if cv2.contourArea(box) > 1500:
             cv2.drawContours(image, box, -1, (0, 255, 0), 2)
             M = cv2.moments(box)
             center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
