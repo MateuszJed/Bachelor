@@ -13,7 +13,8 @@ flip_cam = False
 intel_cam = True
 detected = False
 run = True
-
+Kp_y = 0.5
+kd_y = 0
 #If IntelSense are not connecet switch to pc camera
 try:
     pipeline = rs.pipeline()
@@ -43,6 +44,8 @@ def main():
     setp,con,watchdog,Init_pose = initial_communiation('169.254.182.10', 30004,500)
     v_0,v_2,t_0,t_1,t_f = 0    ,0,     0,      1.5,    0.75
 
+    prev_error = 0
+    reference_point = 0
     start_time = time.time()
     watchdog.input_int_register_0 = 2
     con.send(watchdog)  # sending mode == 2
@@ -65,48 +68,55 @@ def main():
         x_send, y_send,distance,image, mask, depth, detected = ObjectDetection(image, depth_frame,depth, lower_color, upper_color, height, width, flip_cam)
         # x_send, y_send, mask,image,detected = ObjectDetection(image,lower_color, upper_color,height,width,flip_cam)
         #Constrain values from camera 
-        x_send = _map(x_send,-width/2,width/2,-0.4,-1.3)
+        #x_send = _map(x_send,-width/2,width/2,-0.4,-1.3)
         #y_send = _map(y_send,-height/2,height/2,100,500)
-        print(x_send)
-
-        # Trajectory 
-
-        T = inital_parameters_traj(Init_pose[1],x_send,v_0,v_2,     0,      1.5,    0.75)
-
-        state = con.receive()
-        t = time.time() - start_time
-        if state.runtime_state > 1 and detected:
-            if watchdog.input_int_register_0 != 2:
-                watchdog.input_int_register_0 = 2
-                con.send(watchdog)  # sending mode == 4
-            q, dq, ddq = asym_trajectory(t)
-            # logging trajectory
-            Init_pose[1] = q
-            q1, q2, q3 = inverse_kinematic(Init_pose[0], Init_pose[1], Init_pose[2])
-            send_to_ur = [q1,q2,q3,-1.570796327,-3.141592654,1.570796327]
-
-            list_to_setp(setp, send_to_ur)
-            con.send(setp)  # sending new pose
-        else:
-            if watchdog.input_int_register_0 != 4:
-                watchdog.input_int_register_0 = 4
-                con.send(watchdog)  # sending mode == 4
 
         cv2.imshow("Result", image)
+        if reference_point != 0:
+            #PID
+            error = (reference_point-distance)
+            P_out = Kp_y*error+kd_y*(error-prev_error)-0.68
+            print(f"Befour map : {P_out}")
+            P_out = _map(P_out,-1.5,1.5,-0.4,-1.4)
+            print(f"After map : {P_out}")
 
-        v_0 = state.actual_TCP_speed[0]
-        v_2 = v_0
-        Init_pose[1] = x_send
-        start_time = time.time()
-        if cv2.waitKey(1) == 27:  # Break loop with ESC-key
+            # Trajectory 
+            T = inital_parameters_traj(Init_pose[1],P_out,v_0,v_2,     0,      1.5,    0.75)
+
+            t = time.time() - start_time
             state = con.receive()
-            # ====================mode 3===================
-            watchdog.input_int_register_0 = 3
-            con.send(watchdog)
-            con.send_pause()
-            con.disconnect()
+            if state.runtime_state > 1 and detected:
+                if watchdog.input_int_register_0 != 2:
+                    watchdog.input_int_register_0 = 2
+                    con.send(watchdog)  # sending mode == 4
+                q, dq, ddq = asym_trajectory(t)
+                # logging trajectory
+                Init_pose[1] = q
+                q1, q2, q3 = inverse_kinematic(Init_pose[0], Init_pose[1], Init_pose[2])
+                send_to_ur = [q1,q2,q3,-1.570796327,-3.141592654,1.570796327]
 
-            break   
+                list_to_setp(setp, send_to_ur)
+                con.send(setp)  # sending new pose
+            else:
+                if watchdog.input_int_register_0 != 4:
+                    watchdog.input_int_register_0 = 4
+                    con.send(watchdog)  # sending mode == 4
+
+
+            v_0 = state.actual_TCP_speed[1]
+            v_2 = v_0
+            Init_pose[1] = P_out
+            start_time = time.time()
+            if cv2.waitKey(1) == 27:  # Break loop with ESC-key
+                state = con.receive()
+                # ====================mode 3===================
+                watchdog.input_int_register_0 = 3
+                con.send(watchdog)
+                con.send_pause()
+                con.disconnect()
+        if cv2.waitKey(1) == ord("k"):
+            reference_point = distance
+            print("Reference point its ready")
             
 if __name__ == '__main__':
     main()
