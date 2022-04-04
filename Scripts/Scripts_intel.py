@@ -74,7 +74,7 @@ def colorCalibration():
         colorlist = [l_h,l_s,l_v,u_h,u_s,u_v]
     
         if cv2.waitKey(1) == 27:  # Break loop with ESC-key
-            with open(r"D:\OneDrive - NTNU\Programmering\Python\Prosjekt\Bachelor\Source\Bachelor\Color_data_set\{}.txt".format(nameOfList), "w") as f:
+            with open(r"C:\Users\mateusz.jedynak\OneDrive - NTNU\Programmering\Python\Prosjekt\Bachelor\Source\Bachelor\Color_data_set\{}.txt".format(nameOfList), "w") as f:
               for s in colorlist:
                 f.write(str(s) +",")
             break
@@ -83,7 +83,7 @@ def videoCalibration():
     """ Calibration center of body."""
     color_list = []
     name_of_list = input("Name of list: ")
-    with open(r"D:\OneDrive - NTNU\Programmering\Python\Prosjekt\Bachelor\Source\Bachelor\Color_data_set\{}.txt".format(name_of_list), "r") as f:
+    with open(r"C:\Users\mateusz.jedynak\OneDrive - NTNU\Programmering\Python\Prosjekt\Bachelor\Source\Bachelor\Color_data_set\{}.txt".format(name_of_list), "r") as f:
       for line in f:
         x = line.split(",")
         for i in x:
