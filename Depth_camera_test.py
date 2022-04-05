@@ -8,7 +8,7 @@ from Scripts.Kinematic import inverse_kinematic
 from Scripts.Camera import ObjectDetection,Inital_color
 from Scripts.miscellaneous import _map,setp_to_list,list_to_setp
 from Scripts.UR10 import initial_communiation
-from Scripts.trajectory import asym_trajectory, log_traj, plot_traj ,inital_parameters_traj
+from Scripts.trajectory import asym_trajectory,inital_parameters_traj
 import matplotlib.pyplot as plt
 
 lower_color, upper_color = Inital_color("yellowbox")

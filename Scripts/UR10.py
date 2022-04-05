@@ -32,9 +32,16 @@ def initial_communiation(Robot_IP,Robot_Port,FREQUENCY):
     watchdog = con.send_input_setup(watchdog_names, watchdog_types)
 
     # ---------------------registers:-------------------------------
-    setp.input_double_register_0 = 1.57
-    setp.input_double_register_1 = -1.57
-    setp.input_double_register_2 = 1.57
+    # setp.input_double_register_0 = 1.57
+    # setp.input_double_register_1 = -1.57
+    # setp.input_double_register_2 = 1.57
+    # setp.input_double_register_3 = -1.57
+    # setp.input_double_register_4 = -3.14
+    # setp.input_double_register_5 = 1.57
+
+    setp.input_double_register_0 = 1.588424152240039
+    setp.input_double_register_1 = -1.240405499392370
+    setp.input_double_register_2 = 1.191187214486130
     setp.input_double_register_3 = -1.57
     setp.input_double_register_4 = -3.14
     setp.input_double_register_5 = 1.57
