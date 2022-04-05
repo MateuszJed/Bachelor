@@ -116,7 +116,7 @@ def main():
                 con.disconnect()
         if cv2.waitKey(1) == ord("k"):
             reference_point_y = distance
-            reference_point_x = x_send
+            reference_point_x = Init_pose[0]
             print("Reference point its ready")
             
 if __name__ == '__main__':
