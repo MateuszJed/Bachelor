@@ -1,0 +1,8 @@
+import time 
+
+
+start_time = time.time()
+
+t =time.time()-  start_time 
+
+print(t)

@@ -72,7 +72,7 @@ def main():
                                             ,depth_frame.get_distance(center[0]-5, center[1]+5)])
                 distnace_to_send = np.mean(distnace_to_send[distnace_to_send != 0])
 
-                print(distnace_to_send)
+                print(x_cord)
                 cv2.putText(image, "centroid", (center[0] + 10, center[1]), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 0, 255),1)
                 cv2.putText(image, "(" + str(x_cord) + "," + str(y_cord) + ")", (center[0] + 10, center[1] + 15),
                             cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 0, 255), 1)
