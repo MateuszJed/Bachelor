@@ -1,91 +1,58 @@
-import tkinter as tk
+from tkinter import *
 from tkinter import ttk
 
-
-# root window
-root = tk.Tk()
-root.geometry('300x200')
-root.resizable(False, False)
-root.title('Slider Demo')
-
-
-root.columnconfigure(0, weight=1)
-root.columnconfigure(1, weight=3)
-
-
-# slider current value
-current_value = tk.DoubleVar()
-
-
+def val(value):
+    print(value)
+  
+root = Tk()
+root.geometry("200x200")
+frame = Frame(root)
+frame.pack()
+current_value_kp = DoubleVar()
+current_value_kd = DoubleVar()
+current_value_ki = DoubleVar()
+  
 def get_current_value():
-    return '{: .2f}'.format(current_value.get())
+    return '{: .2f}'.format(current_value_kp.get())
 
 
 def slider_changed(event):
     value_label.configure(text=get_current_value())
 
-
-# label for the slider
-slider_Kp = ttk.Label(
-    root,
-    text='Kp:'
-)
-slider_Kd = ttk.Label(
-    root,
-    text='Kd:'
-)
-slider_Kd.grid(
-    column=0,
-    row=0,
-    sticky='w'
-)
-
-slider_Kp.grid(
-    column=0,
-    row=0,
-    sticky='w'
-)
-
-#  slider
-slider = ttk.Scale(
-    root,
-    from_=0.3,
-    to=2.5,
-    orient='horizontal',  # vertical
-    command=slider_changed,
-    variable=current_value
-)
-
-slider.grid(
-    column=1,
-    row=0,
-    sticky='we'
-)
-
-# current value label
-current_value_label = ttk.Label(
-    root,
-    text='Current Value:'
-)
-
-current_value_label.grid(
-    row=1,
-    columnspan=2,
-    sticky='n',
-    ipadx=10,
-    ipady=10
-)
-
-# value label
 value_label = ttk.Label(
     root,
     text=get_current_value()
 )
-value_label.grid(
-    row=2,
-    columnspan=2,
-    sticky='n'
+  
+Kp_slider = ttk.Scale(
+    root,
+    from_=0,
+    to=100,
+    orient='horizontal',  # vertical
+    command=slider_changed,
+    variable=current_value_kp
 )
+Kp_slider.pack(padx=5, pady=5)
 
+Kd_slider = ttk.Scale(
+    root,
+    from_=0,
+    to=100,
+    orient='horizontal',  # vertical
+    command=slider_changed,
+    variable=current_value_kp
+)
+Kd_slider.pack(padx=5, pady=5)
+
+Ki_slider = ttk.Scale(
+    root,
+    from_=0,
+    to=100,
+    orient='horizontal',  # vertical
+    command=slider_changed,
+    variable=current_value_kp
+)
+Ki_slider.pack(padx=5, pady=5)
+  
 
 root.mainloop()

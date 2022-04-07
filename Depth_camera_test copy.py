@@ -10,7 +10,7 @@ from Scripts.miscellaneous import _map,setp_to_list,list_to_setp
 from Scripts.UR10 import initial_communiation
 from Scripts.trajectory import asym_trajectory,inital_parameters_traj
 import matplotlib.pyplot as plt
-
+import asyncio
 lower_color, upper_color = Inital_color("yellowbox")
 
 flip_cam = False
@@ -30,7 +30,7 @@ color_frame = frames.get_color_frame()
 image = np.asanyarray(color_frame.get_data())
 height = image.shape[0]
 width = image.shape[1]
-
+print(height,width)
 def main():
     # Client has a few methods to get proxy to UA nodes that should always be in address space such as Root or Objects
     while 1:
@@ -52,30 +52,32 @@ def main():
         kernel = np.ones((5, 5), np.uint8)
         dilation = cv2.dilate(mask, kernel)
         # Finding the contours
-        contours, hierarchy = cv2.findContours(dilation, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-        if len(contours) > 0:
-            box = max(contours, key=cv2.contourArea)
-            if cv2.contourArea(box) > 1500:
-                cv2.drawContours(image, box, -1, (0, 255, 0), 2)
-                M = cv2.moments(box)
-                center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
+        # contours, hierarchy = cv2.findContours(dilation, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        # if len(contours) > 0:
+        #     box = max(contours, key=cv2.contourArea)
+        #     if cv2.contourArea(box) > 1500:
+        #         cv2.drawContours(image, box, -1, (0, 255, 0), 2)
+        #         M = cv2.moments(box)
+        #         center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
 
-                x_cord = center[0]-width/2
-                y_cord = -1*(center[1]-height/2)
+        #         x_cord = center[0]-width/2
+        #         y_cord = -1*(center[1]-height/2)
 
-                #Distance
-                cv2.circle(image, center, 3, (0, 0, 255), -1)                
-                distnace_to_send = np.array([depth_frame.get_distance(center[0], center[1])
-                                            ,depth_frame.get_distance(center[0]+5, center[1]+5)
-                                            ,depth_frame.get_distance(center[0]-5, center[1]-5)
-                                            ,depth_frame.get_distance(center[0]+5, center[1]-5)
-                                            ,depth_frame.get_distance(center[0]-5, center[1]+5)])
-                distnace_to_send = np.mean(distnace_to_send[distnace_to_send != 0])
+        #         #Distance
+                # cv2.circle(image, (100,100), 3, (0, 0, 255), -1)                
+                # distnace_to_send = np.array([depth_frame.get_distance(center[0], center[1])
+                #                             ,depth_frame.get_distance(center[0]+5, center[1]+5)
+                #                             ,depth_frame.get_distance(center[0]-5, center[1]-5)
+                #                             ,depth_frame.get_distance(center[0]+5, center[1]-5)
+                #                             ,depth_frame.get_distance(center[0]-5, center[1]+5)])
+                # distnace_to_send = np.mean(distnace_to_send[distnace_to_send != 0])
 
-                print(x_cord)
-                cv2.putText(image, "centroid", (center[0] + 10, center[1]), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 0, 255),1)
-                cv2.putText(image, "(" + str(x_cord) + "," + str(y_cord) + ")", (center[0] + 10, center[1] + 15),
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 0, 255), 1)
+                # print(x_cord)
+                # cv2.putText(image, "centroid", (center[0] + 10, center[1]), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 0, 255),1)
+                # cv2.putText(image, "(" + str(x_cord) + "," + str(y_cord) + ")", (center[0] + 10, center[1] + 15),
+                #             cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 0, 255), 1)
+        cv2.circle(image, (640,250), 3, (0, 0, 255), -1)
+        print(depth_frame.get_distance(640,250))                
         cv2.imshow("Result", image)
         # cv2.imshow("Mask", mask)
         # cv2.imshow("Depth", depth)

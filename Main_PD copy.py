@@ -8,14 +8,12 @@ from Scripts.UR10 import initial_communiation
 from Scripts.trajectory import asym_trajectory,inital_parameters_traj
 
 lower_color, upper_color = Inital_color("yellowbox")
-
 flip_cam = False
 detected = False
 Controll = True
 run = True
 # Kp_y, Kd_y, Ki_y = 0.7, 0.001,0.01
-Kp_y, Kd_y, Ki_y = 1.5, 0,0
-Kp_x, Kd_x, Ki_x = 0.5, 0.1,1
+
 
 path = r"C:\Users\mateusz.jedynak\OneDrive - NTNU\Programmering\Python\Prosjekt\Bachelor\Source\Bachelor\Data\X-Y-retning-pix-meter_simply_PID"
 
@@ -45,15 +43,15 @@ log_time = []
 def main():
     # Client has a few methods to get proxy to UA nodes that should always be in address space such as Root or Objects
     setp,con,watchdog,Init_pose = initial_communiation('169.254.182.10', 30004,500)
-
+    Kp_y, Kd_y, Ki_y = 0.5, 0,0
+    Kp_x, Kd_x, Ki_x = 0.5, 0.1,1
     v_0_x,v_2_x,v_0_y,v_2_y,t_0,t_1,t_f = 0,0,0,0,0,1.5,0.75
     prev_error_x, prev_error_y,reference_point_x,reference_point_y = 0,0,0,0
     eintegral_x,eintegral_y = 0,0
-    prevT = 0
 
     running = False
 
-    start_time = time.time()                ################################Sjekk ditta trur de e feil
+    start_time = time.time()
     watchdog.input_int_register_0 = 2
     con.send(watchdog)  # sending mode == 2
     state = con.receive()
@@ -71,24 +69,27 @@ def main():
         x_send, y_send,distance,image, mask, depth, detected = ObjectDetection(image, depth_frame,depth, lower_color,
                                                                                  upper_color, height, width, flip_cam)
         xlogging = x_send
-        distance = round(distance,2)
-
+        distance = round(distance,2)-2.16
         #Delta time 
-        t = time.time() - start_time #############tid er feil
+        t = time.time() - start_time
         start_time = time.time()
-
         if reference_point_x != 0 and reference_point_y !=0:
 
-            #New pid            
-            error_y = (reference_point_y-distance)
-            dedt = (error_y-prev_error_y)/t #Derivative
+            # print(Kp_y,Kd_y,Ki_y)
+
+            #PID Y
+            error_y = (reference_point_y-distance)*-1
+            dedt = (error_y-prev_error_y) #Derivative
             eintegral_y = eintegral_y + error_y*t #Integral
 
-            P_out_y = Kp_y*error_y + Kd_y*dedt + Ki_y*eintegral_y
-            print(P_out_y,t)
+            P_out_yy = Kp_y*error_y + Kd_y*dedt + Ki_y*eintegral_y
+            P_out_y = P_out_yy + reference_point_y
+            # print(P_out_y)
+            print(reference_point_y,distance,error_y,P_out_yy,P_out_y,Kp_y,Kd_y,Ki_y)
+            
             #PID Y
             # P_out_y = Kp_y*error_y+Kd_y*(error_y-prev_error_y)+Ki_y*t/(error_y-prev_error_y)
-            P_out_y = _map(P_out_y,Constrain_y[0],Constrain_y[1],Constrain_y[2],Constrain_y[3])
+            # P_out_y = _map(P_out_y,Constrain_y[0],Constrain_y[1],Constrain_y[2],Constrain_y[3])
 
             #Constrain values from camera in x-axis
             x_send = _map(x_send,Constrain_x[0],Constrain_x[1],Constrain_x[2],Constrain_x[3])*-1
@@ -160,8 +161,20 @@ def main():
                 con.send(watchdog)
                 con.send_pause()
                 con.disconnect()
+            if keyboard.is_pressed("q"):  # Break loop with ESC-key
+                Kp_y = Kp_y + 0.1
+            if keyboard.is_pressed("a"):  # Break loop with ESC-key
+                Kp_y = Kp_y - 0.1
+            if keyboard.is_pressed("w"):  # Break loop with ESC-key
+                Kd_y = Kd_y + 0.001
+            if keyboard.is_pressed("s"):  # Break loop with ESC-key
+                Kd_y = Kd_y - 0.001
+            if keyboard.is_pressed("e"):  # Break loop with ESC-key
+                Ki_y = Ki_y + 0.001
+            if keyboard.is_pressed("d"):  # Break loop with ESC-key
+                Ki_y = Ki_y - 0.001
         if keyboard.is_pressed("k"):
-            reference_point_y = 1.2
+            reference_point_y = distance
             reference_point_x = 0.012723869889305114
             print(distance)
             start_time_log = time.time()
