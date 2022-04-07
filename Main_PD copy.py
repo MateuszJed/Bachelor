@@ -75,18 +75,15 @@ def main():
         start_time = time.time()
         if reference_point_x != 0 and reference_point_y !=0:
 
-            # print(Kp_y,Kd_y,Ki_y)
-
             #PID Y
             error_y = (reference_point_y-distance)*-1
-            dedt = (error_y-prev_error_y) #Derivative
+            dedt = (error_y-prev_error_y)/t #Derivative
             eintegral_y = eintegral_y + error_y*t #Integral
 
             P_out_yy = Kp_y*error_y + Kd_y*dedt + Ki_y*eintegral_y
             P_out_y = P_out_yy + reference_point_y
-            # print(P_out_y)
-            print(reference_point_y,distance,error_y,P_out_yy,P_out_y,Kp_y,Kd_y,Ki_y)
-            
+            # print(reference_point_y,distance,error_y,P_out_yy,P_out_y,Kp_y,Kd_y,Ki_y)
+            print(f"Ref: {reference_point_y}, Dis: {distance}, Error: {error_y}, P: {P_out_yy}, P: {P_out_y}")
             #PID Y
             # P_out_y = Kp_y*error_y+Kd_y*(error_y-prev_error_y)+Ki_y*t/(error_y-prev_error_y)
             # P_out_y = _map(P_out_y,Constrain_y[0],Constrain_y[1],Constrain_y[2],Constrain_y[3])
@@ -96,6 +93,7 @@ def main():
             #PID X
             error_x = (reference_point_x-x_send)
             P_out_x = Kp_x*error_x+Kd_x*(error_x-prev_error_x)
+            prev_error_y = error_y
 
             # Trajectory 
             parameters_to_trajectory_y = inital_parameters_traj(Init_pose[1],P_out_y,v_0_y,v_2_y,     0,      0.1,    0.05)
@@ -137,7 +135,6 @@ def main():
                     con.send(watchdog)  # sending mode == 4
             
 
-            
             v_0_y,v_0_x = state.actual_TCP_speed[1],state.actual_TCP_speed[0]
             v_2_y,v_2_x = v_0_y,v_0_x
             # Init_pose[1],Init_pose[0] = P_out_y,P_out_x
