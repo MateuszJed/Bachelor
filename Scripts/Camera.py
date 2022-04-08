@@ -35,7 +35,6 @@ def ObjectDetection(image,depth_frame,depth,lower_color, upper_color,height,widt
 
             x_cord = center[0]-width/2
             y_cord = -1*(center[1]-height/2)
-
             #Distance
             distance = np.array([depth_frame.get_distance(center[0], center[1])
                                         ,depth_frame.get_distance(center[0]+7, center[1]+7)
@@ -43,14 +42,15 @@ def ObjectDetection(image,depth_frame,depth,lower_color, upper_color,height,widt
                                         ,depth_frame.get_distance(center[0]+7, center[1]-7)
                                         ,depth_frame.get_distance(center[0]-7, center[1]+7)])
             distance = np.mean(distance[distance != 0])
+            print(center[0],center[1],distance)
             cv2.circle(image, center, 3, (0, 0, 255), -1)
             cv2.putText(image, "centroid", (center[0] + 10, center[1]), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 0, 255),1)
             cv2.putText(image, "(" + str(x_cord) + "," + str(y_cord) + ")", (center[0] + 10, center[1] + 15),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 0, 255), 1)
             return x_cord, y_cord,distance,image,mask,depth,True
         else:
-            return 0, 0,0,image,mask,depth,False
+            return -1000, 0,0,image,mask,depth,False
     else:
-            return 0, 0,0,image,mask,depth,False
+            return -1000, 0,0,image,mask,depth,False
 
 

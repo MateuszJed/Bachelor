@@ -77,6 +77,7 @@ def colorCalibration():
             with open(r"C:\Users\mateusz.jedynak\OneDrive - NTNU\Programmering\Python\Prosjekt\Bachelor\Source\Bachelor\Color_data_set\{}.txt".format(nameOfList), "w") as f:
               for s in colorlist:
                 f.write(str(s) +",")
+            pipeline.stop()
             break
 
 def videoCalibration():
@@ -126,4 +127,5 @@ def videoCalibration():
         cv2.imshow("Result", image)
         cv2.imshow("Mask", mask)
         if cv2.waitKey(1) == 27:  # Break loop with ESC-key
+            pipeline.stop()
             break   

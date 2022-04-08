@@ -5,7 +5,7 @@ import cv2,math,torch,sys,asyncio,logging,time
 import pyrealsense2 as rs
 import numpy as np
 from Scripts.Kinematic import inverse_kinematic
-from Scripts.Camera import ObjectDetection,Inital_color
+from Scripts.Camera_v2 import ObjectDetection,Inital_color
 from Scripts.miscellaneous import _map,setp_to_list,list_to_setp
 from Scripts.UR10 import initial_communiation
 from Scripts.trajectory import asym_trajectory,inital_parameters_traj
@@ -33,9 +33,13 @@ width = image.shape[1]
 
 def main():
     # Client has a few methods to get proxy to UA nodes that should always be in address space such as Root or Objects
+    middle_point = 1.2368000507354737
     while 1:
-        frames = pipeline.wait_for_frames() #
 
+
+        
+        frames = pipeline.wait_for_frames() #
+        
         aligned_frames =  align.process(frames)
         depth_frame = aligned_frames.get_depth_frame()
         aligned_color_frame = aligned_frames.get_color_frame()
@@ -44,12 +48,15 @@ def main():
         depth = np.asanyarray(depth_frame.get_data())
 
         #Object detection
-        x_pos, y_pos,distance,image, mask, depth, detected = ObjectDetection(image, depth_frame,depth, lower_color, upper_color, height, width, flip_cam)
-        print(distance)
+        x_send, y_send,x_m,distance,image, mask, depth, detected = ObjectDetection(image, depth_frame,depth, lower_color,
+                                                                                 upper_color, height, width,middle_point, flip_cam)
+        # print(x_pos,y_pos)
         cv2.imshow("Result", image)
-        cv2.imshow("Mask", mask)
-        cv2.imshow("Depth", depth)
+        # print(distance)
+        # cv2.imshow("Mask", mask)
+        # cv2.imshow("Depth", depth)
         if cv2.waitKey(1) == 27:  # Break loop with ESC-key
+            pipeline.stop()
             break   
 if __name__ == '__main__':
     main()

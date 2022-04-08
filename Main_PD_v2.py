@@ -43,14 +43,13 @@ log_time = []
 def main():
     # Client has a few methods to get proxy to UA nodes that should always be in address space such as Root or Objects
     setp,con,watchdog,Init_pose = initial_communiation('169.254.182.10', 30004,500)
-    Kp_y, Kd_y, Ki_y = 0.5, 0,0
+    Kp_y, Kd_y, Ki_y = 0.5, 0.003,0.007
     Kp_x, Kd_x, Ki_x = 0.5, 0.1,1
     v_0_x,v_2_x,v_0_y,v_2_y,t_0,t_1,t_f = 0,0,0,0,0,1.5,0.75
     prev_error_x, prev_error_y,reference_point_x,reference_point_y = 0,0,0,0
     eintegral_x,eintegral_y = 0,0
 
     running = False
-
     start_time = time.time()
     watchdog.input_int_register_0 = 2
     con.send(watchdog)  # sending mode == 2
@@ -69,10 +68,15 @@ def main():
         x_send, y_send,distance,image, mask, depth, detected = ObjectDetection(image, depth_frame,depth, lower_color,
                                                                                  upper_color, height, width, flip_cam)
         xlogging = x_send
-        distance = round(distance,2)-2.16
+        distance = round(distance,2)-2.1
         #Delta time 
         t = time.time() - start_time
         start_time = time.time()
+        if x_send > -10 and reference_point_x == 0:
+            print("Start Regulation")
+            start_time_log = time.time()
+            reference_point_y = -0.8
+            reference_point_x = 0.012723869889305114
         if reference_point_x != 0 and reference_point_y !=0:
 
             #PID Y
@@ -82,8 +86,9 @@ def main():
 
             P_out_yy = Kp_y*error_y + Kd_y*dedt + Ki_y*eintegral_y
             P_out_y = P_out_yy + reference_point_y
+                
             # print(reference_point_y,distance,error_y,P_out_yy,P_out_y,Kp_y,Kd_y,Ki_y)
-            print(f"Ref: {reference_point_y}, Dis: {distance}, Error: {error_y}, P: {P_out_yy}, P: {P_out_y}")
+            # print(f"Ref: {reference_point_y}, Dis: {distance}, Error: {error_y}, P: {P_out_yy}, P: {P_out_y},  Kp {Kp_y}, Kd {Kd_y}, Ki {Ki_y}")
             #PID Y
             # P_out_y = Kp_y*error_y+Kd_y*(error_y-prev_error_y)+Ki_y*t/(error_y-prev_error_y)
             # P_out_y = _map(P_out_y,Constrain_y[0],Constrain_y[1],Constrain_y[2],Constrain_y[3])
@@ -97,7 +102,7 @@ def main():
 
             # Trajectory 
             parameters_to_trajectory_y = inital_parameters_traj(Init_pose[1],P_out_y,v_0_y,v_2_y,     0,      0.1,    0.05)
-            # parameters_to_trajectory_x = inital_parameters_traj(Init_pose[0],P_out_x,v_0_x,v_2_x,     0,      1.5,    0.75)
+            parameters_to_trajectory_x = inital_parameters_traj(Init_pose[0],P_out_x,v_0_x,v_2_x,     0,      1.5,    0.75)
             state = con.receive()
             if state.runtime_state > 1 and detected:
                 if watchdog.input_int_register_0 != 2:
@@ -111,8 +116,8 @@ def main():
                 Init_pose[1] = q_y
 
                 #Trajectory for x
-                # q_x, dq_x, ddq_x = asym_trajectory(t,parameters_to_trajectory_x)
-                # Init_pose[0] = q_x
+                q_x, dq_x, ddq_x = asym_trajectory(t,parameters_to_trajectory_x)
+                Init_pose[0] = q_x
 
                 #Inverse Kinematic
                 try: 
@@ -123,12 +128,12 @@ def main():
                     con.send(setp)  # sending new8 pose
                 except ValueError as info:
                     print(info)
-                # log_time.append(endtime)
-                # log_x.append(xlogging)
-                # log_distance.append(distance-reference_point_y)
+                log_time.append(endtime)
+                log_x.append(xlogging)
+                log_distance.append(distance-reference_point_y)
                 # print(distance)
-                # if endtime > 15:
-                #     running = True
+                if endtime > 15:
+                    running = True
             else:
                 if watchdog.input_int_register_0 != 4:
                     watchdog.input_int_register_0 = 4
@@ -137,20 +142,20 @@ def main():
 
             v_0_y,v_0_x = state.actual_TCP_speed[1],state.actual_TCP_speed[0]
             v_2_y,v_2_x = v_0_y,v_0_x
-            # Init_pose[1],Init_pose[0] = P_out_y,P_out_x
-            Init_pose[1] = P_out_y
+            Init_pose[1],Init_pose[0] = P_out_y,P_out_x
+            # Init_pose[1] = P_out_y
             if keyboard.is_pressed("esc") or running:  # Break loop with ESC-key
-                # info_csv_1 = [f"Constrain_x: {Constrain_x}, Constrain_y: {Constrain_y}, Posisjonering til lasten er 62,5 grade fra UR10, Y: -140 X: -55"]
-                # info_csv_2 = [f"Kp_x:{Kp_x}, Kp_y:{Kp_y}, Kd_x:{Kd_x}, Kd_y:{Kd_y}"]
-                # header = ["Time","X","Y"]
-                # with open(r'C:\Users\mateusz.jedynak\OneDrive - NTNU\Programmering\Python\Prosjekt\Bachelor\Source\Bachelor\Data\X-Y-retning-pix-meter_simply_PID\X-Y-retning-pix-meter_simply_PID_{}.csv'.format(str(len(os.listdir(path)))), 'w',newline="") as f:
-                #     # create the csv writer
-                #     writer = csv.writer(f)
-                #     writer.writerow(info_csv_1)
-                #     writer.writerow(info_csv_2)
-                #     writer.writerow(header)
-                #     for i in range(len(log_time)):
-                #         writer.writerow([log_time[i],log_x[i],log_distance[i]])
+                info_csv_1 = [f"Constrain_x: {Constrain_x}, Constrain_y: {Constrain_y}, Posisjonering til lasten er 62,5 grade fra UR10, Y: -140 X: -55"]
+                info_csv_2 = [f"Kp_x:{Kp_x}, Kp_y:{Kp_y}, Kd_x:{Kd_x}, Kd_y:{Kd_y}"]
+                header = ["Time","X","Y"]
+                with open(r'C:\Users\mateusz.jedynak\OneDrive - NTNU\Programmering\Python\Prosjekt\Bachelor\Source\Bachelor\Data\X-Y-retning-pix-meter_simply_PID\X-Y-retning-pix-meter_simply_PID_{}.csv'.format(str(len(os.listdir(path)))), 'w',newline="") as f:
+                    # create the csv writer
+                    writer = csv.writer(f)
+                    writer.writerow(info_csv_1)
+                    writer.writerow(info_csv_2)
+                    writer.writerow(header)
+                    for i in range(len(log_time)):
+                        writer.writerow([log_time[i],log_x[i],log_distance[i]])
                 print("Ferdig")   
                 state = con.receive()
                 # ====================mode 3===================
