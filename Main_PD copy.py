@@ -13,8 +13,8 @@ flip_cam = False
 detected = False
 Controll = True
 run = True
-Kp_y, Kd_y,Ki_y = 1, 0.3,3
-Kp_x, Kd_x,Ki_x = 0.5, 0.1,1
+Kp_y, Kd_y, Ki_y = 0.8, 0.001,0.01
+Kp_x, Kd_x, Ki_x = 0.5, 0.1,1
 
 path = r"C:\Users\mateusz.jedynak\OneDrive - NTNU\Programmering\Python\Prosjekt\Bachelor\Source\Bachelor\Data\X-Y-retning-pix-meter_simply_PID"
 
@@ -47,13 +47,16 @@ def main():
 
     v_0_x,v_2_x,v_0_y,v_2_y,t_0,t_1,t_f = 0,0,0,0,0,1.5,0.75
     prev_error_x, prev_error_y,reference_point_x,reference_point_y = 0,0,0,0
-    running = False
+    eintegral_x,eintegral_y = 0,0
+    prevT = 0
 
+    running = False
+    x_delta = True
+    start_time = time.time()                ################################Sjekk ditta trur de e feil
     watchdog.input_int_register_0 = 2
     con.send(watchdog)  # sending mode == 2
     state = con.receive()
     while 1:
-        start_time = time.time()
         frames = pipeline.wait_for_frames()
         aligned_frames =  align.process(frames)
         depth_frame = aligned_frames.get_depth_frame()
@@ -67,20 +70,20 @@ def main():
         x_send, y_send,distance,image, mask, depth, detected = ObjectDetection(image, depth_frame,depth, lower_color,
                                                                                  upper_color, height, width, flip_cam)
         xlogging = x_send
-        distance = round(distance,2)
-        # cv2.imshow("Result",image)
-        # print(x_send)
-        if x_send > -10 and reference_point_x == 0:
-            print("Start Regulation")
-            start_time_log = time.time()
-            reference_point_y = 1.3874000787734986
-            reference_point_x = 0.012723869889305114
-
+        distance = round(distance,3)
         if reference_point_x != 0 and reference_point_y !=0:
-            t = time.time() - start_time
-            #PID Y
-            error_y = (reference_point_y-distance)
-            P_out_y = Kp_y*error_y+Kd_y*(error_y-prev_error_y)+Ki_y*t/(error_y-prev_error_y)
+
+            t = time.time() - start_time #############tid er feil
+            # if x_delta:                                       #Forslag########################### måle delta T og sette den som fast variabel
+            #     t = 0.001
+            #     x_delta = False
+
+            print(t)
+
+            error_y = (reference_point_y-distance)*-1
+            #PID y_send
+            eintegral_y = eintegral_y + Ki_y*error_y()
+            P_out_y = Kp_y*error_y  +   Kd_y*(error_y-prev_error_y)/t   +   Ki_y*eintegral_y
             P_out_y = _map(P_out_y,Constrain_y[0],Constrain_y[1],Constrain_y[2],Constrain_y[3])
 
             #Constrain values from camera in x-axis
@@ -90,7 +93,7 @@ def main():
             P_out_x = Kp_x*error_x+Kd_x*(error_x-prev_error_x)
             # Trajectory 
             parameters_to_trajectory_y = inital_parameters_traj(Init_pose[1],P_out_y,v_0_y,v_2_y,     0,      1.5,    0.75)
-            parameters_to_trajectory_x = inital_parameters_traj(Init_pose[0],P_out_x,v_0_x,v_2_x,     0,      1.5,    0.75)
+            # parameters_to_trajectory_x = inital_parameters_traj(Init_pose[0],P_out_x,v_0_x,v_2_x,     0,      1.5,    0.75)
             
             state = con.receive()
             if state.runtime_state > 1 and detected:
@@ -105,8 +108,8 @@ def main():
                 Init_pose[1] = q_y
 
                 #Trajectory for x
-                q_x, dq_x, ddq_x = asym_trajectory(t,parameters_to_trajectory_x)
-                Init_pose[0] = q_x
+                # q_x, dq_x, ddq_x = asym_trajectory(t,parameters_to_trajectory_x)
+                # Init_pose[0] = q_x
 
                 #Inverse Kinematic
                 try: 
@@ -117,11 +120,12 @@ def main():
                     con.send(setp)  # sending new8 pose
                 except ValueError as info:
                     print(info)
-                log_time.append(endtime)
-                log_x.append(xlogging)
-                log_distance.append(distance-reference_point_y)
-                if endtime > 15:
-                    running = True
+                # log_time.append(endtime)
+                # log_x.append(xlogging)
+                # log_distance.append(distance-reference_point_y)
+                # print(distance)
+                # if endtime > 15:
+                #     running = True
             else:
                 if watchdog.input_int_register_0 != 4:
                     watchdog.input_int_register_0 = 4
@@ -131,21 +135,21 @@ def main():
             
             v_0_y,v_0_x = state.actual_TCP_speed[1],state.actual_TCP_speed[0]
             v_2_y,v_2_x = v_0_y,v_0_x
-            Init_pose[1],Init_pose[0] = P_out_y,P_out_x
-
+            # Init_pose[1],Init_pose[0] = P_out_y,P_out_x
+            Init_pose[1] = P_out_y
             start_time = time.time()
             if keyboard.is_pressed("esc") or running:  # Break loop with ESC-key
-                info_csv_1 = [f"Constrain_x: {Constrain_x}, Constrain_y: {Constrain_y}, Posisjonering til lasten er 62,5 grade fra UR10, Y: -140 X: -55"]
-                info_csv_2 = [f"Kp_x:{Kp_x}, Kp_y:{Kp_y}, Kd_x:{Kd_x}, Kd_y:{Kd_y}"]
-                header = ["Time","X","Y"]
-                with open(r'C:\Users\mateusz.jedynak\OneDrive - NTNU\Programmering\Python\Prosjekt\Bachelor\Source\Bachelor\Data\X-Y-retning-pix-meter_simply_PID\X-Y-retning-pix-meter_simply_PID_{}.csv'.format(str(len(os.listdir(path)))), 'w',newline="") as f:
-                    # create the csv writer
-                    writer = csv.writer(f)
-                    writer.writerow(info_csv_1)
-                    writer.writerow(info_csv_2)
-                    writer.writerow(header)
-                    for i in range(len(log_time)):
-                        writer.writerow([log_time[i],log_x[i],log_distance[i]])
+                # info_csv_1 = [f"Constrain_x: {Constrain_x}, Constrain_y: {Constrain_y}, Posisjonering til lasten er 62,5 grade fra UR10, Y: -140 X: -55"]
+                # info_csv_2 = [f"Kp_x:{Kp_x}, Kp_y:{Kp_y}, Kd_x:{Kd_x}, Kd_y:{Kd_y}"]
+                # header = ["Time","X","Y"]
+                # with open(r'C:\Users\mateusz.jedynak\OneDrive - NTNU\Programmering\Python\Prosjekt\Bachelor\Source\Bachelor\Data\X-Y-retning-pix-meter_simply_PID\X-Y-retning-pix-meter_simply_PID_{}.csv'.format(str(len(os.listdir(path)))), 'w',newline="") as f:
+                #     # create the csv writer
+                #     writer = csv.writer(f)
+                #     writer.writerow(info_csv_1)
+                #     writer.writerow(info_csv_2)
+                #     writer.writerow(header)
+                #     for i in range(len(log_time)):
+                #         writer.writerow([log_time[i],log_x[i],log_distance[i]])
                 print("Ferdig")   
                 state = con.receive()
                 # ====================mode 3===================
@@ -155,8 +159,9 @@ def main():
                 con.disconnect()
         
         if keyboard.is_pressed("k"):
-            reference_point_y = 1.3874000787734986
+            reference_point_y = 1.2
             reference_point_x = 0.012723869889305114
+            print(distance)
             start_time_log = time.time()
             Controll = True
             print("Reference point its ready")            
