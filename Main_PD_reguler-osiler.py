@@ -67,7 +67,7 @@ def main():
         x_send, y_send,distance,image, mask, depth, detected = ObjectDetection(image, depth_frame,depth, lower_color,
                                                                                  upper_color, height, width, flip_cam)
         xlogging = x_send
-        cv2.imshow("Result",image)
+        # cv2.imshow("Result",image)
         # print(x_send)
         if x_send > -10 and reference_point_x == 0:
             flip = 1
