@@ -14,7 +14,7 @@ detected = False
 Controll = True
 run = True
 
-path = r"C:\Users\mateusz.jedynak\OneDrive - NTNU\Programmering\Python\Prosjekt\Bachelor\Source\Bachelor\Data\X-Y-retning-pix-meter_simply_PID"
+path = r"C:\Users\mateusz.jedynak\OneDrive - NTNU\Programmering\Python\Prosjekt\Bachelor\Source\Bachelor\Data\X-Y-meter_PID"
 
 
 #Config IntelRealsens
@@ -134,13 +134,12 @@ def main():
             v_0_y,v_0_x = state.actual_TCP_speed[1],state.actual_TCP_speed[0]
             v_2_y,v_2_x = v_0_y,v_0_x
             Init_pose[1],Init_pose[0] = P_out_y,P_out_x
-            # Init_pose[0] = P_out_x
-            Init_pose[1] = P_out_y
+
             if keyboard.is_pressed("esc") or running:  # Break loop with ESC-key
                 info_csv_1 = [f"Posisjonering til lasten er 62,5 grade fra UR10, Y: -140 X: -55"]
-                info_csv_2 = [f"Kp_x:{Kp_x}, Kp_y:{Kp_y}, Kd_x:{Kd_x}, Kd_y:{Kd_y}"]
+                info_csv_2 = [f"Kp_x:{Kp_x}, Kp_y:{Kp_y}, Kd_x:{Kd_x}, Kd_y:{Kd_y}, Ki_x: {Ki_x}, Ki_x: {Ki_y}"]
                 header = ["Time","X","Y"]
-                with open(r'C:\Users\mateusz.jedynak\OneDrive - NTNU\Programmering\Python\Prosjekt\Bachelor\Source\Bachelor\Data\X-Y-retning-pix-meter_simply_PID\X-Y-retning-pix-meter_simply_PID_{}.csv'.format(str(len(os.listdir(path)))), 'w',newline="") as f:
+                with open(r'C:\Users\mateusz.jedynak\OneDrive - NTNU\Programmering\Python\Prosjekt\Bachelor\Source\Bachelor\Data\X-Y-meter_PID\X-Y-meter_PID_{}.csv'.format(str(len(os.listdir(path)))), 'w',newline="") as f:
                     # create the csv writer
                     writer = csv.writer(f)
                     writer.writerow(info_csv_1)
