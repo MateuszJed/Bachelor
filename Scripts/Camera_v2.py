@@ -1,5 +1,6 @@
 import cv2,cmath
 import numpy as np
+import pyrealsense2 as rs
 
 def Inital_color(name_of_list):
     # """ Calibration center of body."""
@@ -43,12 +44,33 @@ def ObjectDetection(image,depth_frame,depth,lower_color, upper_color,height,widt
                                         ,depth_frame.get_distance(center[0]+7, center[1]-7)
                                         ,depth_frame.get_distance(center[0]-7, center[1]+7)])
             distance = np.mean(distance[distance != 0])
+# Intrinsics & Extrinsics
+
+            depth_intrin = depth_frame.profile.as_video_stream_profile().intrinsics
+            #color_intrin = color_frame.profile.as_video_stream_profile().intrinsics
+            #depth_to_color_extrin = depth_frame.profile.get_extrinsics_to(color_frame.profile)
+
+            intrin = depth_intrin
+            camera_coordinates_3D =np.array([rs.rs2_deproject_pixel_to_point(intrin, [center[0], center[1]],     depth_frame.get_distance(center[0], center[1])),
+                                             rs.rs2_deproject_pixel_to_point(intrin, [center[0]+7, center[1]+7], depth_frame.get_distance(center[0]+7, center[1]+7)),
+                                             rs.rs2_deproject_pixel_to_point(intrin, [center[0]-7, center[1]-7], depth_frame.get_distance(center[0]-7, center[1]-7)),
+                                             rs.rs2_deproject_pixel_to_point(intrin, [center[0]+7, center[1]-7], depth_frame.get_distance(center[0]+7, center[1]-7)),
+                                             rs.rs2_deproject_pixel_to_point(intrin, [center[0]-7, center[1]+7], depth_frame.get_distance(center[0]-7, center[1]+7))])
+            camera_x_meters = np.mean(camera_coordinates_3D[:,0])
+            camera_y_meters = np.mean(camera_coordinates_3D[:, 1])
+            camera_z_meters = np.mean(camera_coordinates_3D[:, 2][camera_coordinates_3D[:, 2] != 0])
+
+            
+            camera_coordinates = camera_x_meters,camera_y_meters,camera_z_meters
+
+
+
             # if distance > distance_ref:
             #     distance_ref = distance_ref - (distance_ref-distance)
             # if distance < distance_ref:
             #     distance_ref = distance_ref - (distance_ref-distance)
             # print(distance_ref)
-            x_m = cmath.sqrt(distance**2-distance_ref**2) # den fungerer bedre 
+            # x_m = cmath.sqrt(distance**2-distance_ref**2) # den fungerer bedre 
             # if x_m.imag == 0:
             #     x_m = x_m.real
             # if x_m.real == 0:
@@ -56,13 +78,14 @@ def ObjectDetection(image,depth_frame,depth,lower_color, upper_color,height,widt
             
             cv2.circle(image, center, 3, (0, 0, 255), -1)
             cv2.putText(image, "centroid", (center[0] + 10, center[1]), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 0, 255),1)
-            cv2.putText(image, "(" + str(x_m) + ")", (center[0] + 10, center[1] + 15),
+            cv2.putText(image, "(" + str(x_cord) + ")", (center[0] + 10, center[1] + 15),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2)
-            
-            return x_cord, y_cord,x_m,distance,image,mask,depth,True
+            # cv2.imshow("Result", image)
+
+            return x_cord, y_cord,camera_coordinates,distance,mask,depth,True
         else:
-            return 0, 0,0,0,image,mask,depth,False
+            return 0, 0,[0,0,0],0,mask,depth,False
     else:
-            return 0, 0,0,0,image,mask,depth,False
+            return 0, 0,[0,0,0],0,mask,depth,False
 
 

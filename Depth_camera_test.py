@@ -46,12 +46,12 @@ def main():
 
         image = np.asanyarray(aligned_color_frame.get_data())
         depth = np.asanyarray(depth_frame.get_data())
+        cv2.imshow("Result", image)
 
         #Object detection
         x_send, y_send,x_m,distance,image, mask, depth, detected = ObjectDetection(image, depth_frame,depth, lower_color,
                                                                                  upper_color, height, width,middle_point, flip_cam)
         # print(x_pos,y_pos)
-        cv2.imshow("Result", image)
         # print(distance)
         # cv2.imshow("Mask", mask)
         # cv2.imshow("Depth", depth)

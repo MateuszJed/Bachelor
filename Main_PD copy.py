@@ -1,18 +1,20 @@
-from turtle import distance
 import cv2,math,torch,sys,asyncio,logging,time,keyboard,csv,os
 import pyrealsense2 as rs
 import numpy as np
 from Scripts.Kinematic import inverse_kinematic
-from Scripts.Camera_v2 import ObjectDetection,Inital_color
+from Scripts.Camera import ObjectDetection,Inital_color
 from Scripts.miscellaneous import _map,setp_to_list,list_to_setp
 from Scripts.UR10 import initial_communiation
 from Scripts.trajectory import asym_trajectory,inital_parameters_traj
 
 lower_color, upper_color = Inital_color("yellowbox")
+
 flip_cam = False
 detected = False
 Controll = True
 run = True
+Kp_y, Kd_y, Ki_y = 0.8, 0.001,0.01
+Kp_x, Kd_x, Ki_x = 0.5, 0.1,1
 
 path = r"C:\Users\mateusz.jedynak\OneDrive - NTNU\Programmering\Python\Prosjekt\Bachelor\Source\Bachelor\Data\X-Y-retning-pix-meter_simply_PID"
 
@@ -32,27 +34,25 @@ color_frame = frames.get_color_frame()
 image = np.asanyarray(color_frame.get_data())
 height = image.shape[0]
 width = image.shape[1]
-Constrain_y = [-1.2,1.2,-0.3,-1.4]
+Constrain_y = [-1.5,1.5,-0.3,-1.4]
 Constrain_x = [-width/2,width/2,-0.8,0.8]
 
 log_x = []
 log_distance = []
 log_time = []
-def Camera_to_global_coords(x,y,z):
-    global_coords= np.array(np.array([[1,0,0,0],[0,0,1,-2.108],[0,-1,0,-0.662],[0,0,0,1]]))@np.array([[x],[y],[z],[1]])
-    return global_coords[0][0],global_coords[1][0],global_coords[2][0]
+
 def main():
     # Client has a few methods to get proxy to UA nodes that should always be in address space such as Root or Objects
     setp,con,watchdog,Init_pose = initial_communiation('169.254.182.10', 30004,500)
-    Kp_y, Kd_y, Ki_y = 0.5, 0.003,0.007
-    # Kp_x, Kd_x, Ki_x = 0.5, 0.1,1
-    Kp_x, Kd_x, Ki_x = 0.5, 0,0
+
     v_0_x,v_2_x,v_0_y,v_2_y,t_0,t_1,t_f = 0,0,0,0,0,1.5,0.75
     prev_error_x, prev_error_y,reference_point_x,reference_point_y = 0,0,0,0
     eintegral_x,eintegral_y = 0,0
-    middle_point = 1.2368000507354737
+    prevT = 0
+
     running = False
-    start_time = time.time()
+    x_delta = True
+    start_time = time.time()                ################################Sjekk ditta trur de e feil
     watchdog.input_int_register_0 = 2
     con.send(watchdog)  # sending mode == 2
     state = con.receive()
@@ -66,44 +66,35 @@ def main():
         depth = np.asanyarray(depth_frame.get_data())
         hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
         
-        cv2.imshow("Result", image)
         #Object detection
-        x_send, y_send,camera_coordinates,distance, mask, depth, detected = ObjectDetection(image, depth_frame,depth, lower_color,
-                                                                                 upper_color, height, width,middle_point, flip_cam)
-        
-        # xlogging = x_send
-        distance = round(distance,2)-2.1
-
-        #Delta time 
-        t = time.time() - start_time
-        start_time = time.time()
-        # if x_send > -10 and reference_point_x == 0:
-        #     print("Start Regulation")
-        #     start_time_log = time.time()
-        #     reference_point_y = -0.8
-        #     reference_point_x = 0.012723869889305114
-        x,y,z = Camera_to_global_coords(camera_coordinates[0],camera_coordinates[1],camera_coordinates[2])
+        x_send, y_send,distance,image, mask, depth, detected = ObjectDetection(image, depth_frame,depth, lower_color,
+                                                                                 upper_color, height, width, flip_cam)
+        xlogging = x_send
+        distance = round(distance,3)
         if reference_point_x != 0 and reference_point_y !=0:
 
-            #PID Y
-            error_y = (reference_point_y-y)*-1
-            dedt = (error_y-prev_error_y)/t #Derivative
-            eintegral_y = eintegral_y + error_y*t #Integral
+            t = time.time() - start_time #############tid er feil
+            # if x_delta:                                       #Forslag########################### måle delta T og sette den som fast variabel
+            #     t = 0.001
+            #     x_delta = False
 
-            P_out_yy = Kp_y*error_y + Kd_y*dedt + Ki_y*eintegral_y
-            P_out_y = P_out_yy + reference_point_y
+            print(t)
 
+            error_y = (reference_point_y-distance)*-1
+            #PID y_send
+            eintegral_y = eintegral_y + Ki_y*error_y()
+            P_out_y = Kp_y*error_y  +   Kd_y*(error_y-prev_error_y)/t   +   Ki_y*eintegral_y
+            P_out_y = _map(P_out_y,Constrain_y[0],Constrain_y[1],Constrain_y[2],Constrain_y[3])
+
+            #Constrain values from camera in x-axis
+            x_send = _map(x_send,Constrain_x[0],Constrain_x[1],Constrain_x[2],Constrain_x[3])*-1
             #PID X
-            # error_x = (reference_point_x-x_m)
-            # dedt = (error_x-prev_error_x)/t #Derivative
-            # eintegral_x = eintegral_x + error_x*t #Integral
-
-            # P_out_xx = Kp_x*error_x + Kd_x*dedt + Ki_x*eintegral_x
-            # P_out_x = P_out_xx + reference_point_x
-
+            error_x = (reference_point_x-x_send)
+            P_out_x = Kp_x*error_x+Kd_x*(error_x-prev_error_x)
             # Trajectory 
-            parameters_to_trajectory_y = inital_parameters_traj(Init_pose[1],P_out_y,v_0_y,v_2_y,     0,      0.1,    0.05)
+            parameters_to_trajectory_y = inital_parameters_traj(Init_pose[1],P_out_y,v_0_y,v_2_y,     0,      1.5,    0.75)
             # parameters_to_trajectory_x = inital_parameters_traj(Init_pose[0],P_out_x,v_0_x,v_2_x,     0,      1.5,    0.75)
+            
             state = con.receive()
             if state.runtime_state > 1 and detected:
                 if watchdog.input_int_register_0 != 2:
@@ -113,8 +104,8 @@ def main():
                 endtime = time.time()- start_time_log
 
                 #Trajectory for y
-                # q_y, dq_y, ddq_y = asym_trajectory(t,parameters_to_trajectory_y)
-                # Init_pose[1] = q_y
+                q_y, dq_y, ddq_y = asym_trajectory(t,parameters_to_trajectory_y)
+                Init_pose[1] = q_y
 
                 #Trajectory for x
                 # q_x, dq_x, ddq_x = asym_trajectory(t,parameters_to_trajectory_x)
@@ -123,8 +114,7 @@ def main():
                 #Inverse Kinematic
                 try: 
                     q1, q2, q3 = inverse_kinematic(Init_pose[0], Init_pose[1], Init_pose[2])
-                    q6 = q2 +q3 +math.pi/2
-                    send_to_ur = [q1,q2,q3,-1.570796327,-3.141592654,q6]
+                    send_to_ur = [q1,q2,q3,-1.570796327,-3.141592654,1.570796327]
 
                     list_to_setp(setp, send_to_ur)
                     con.send(setp)  # sending new8 pose
@@ -142,11 +132,12 @@ def main():
                     con.send(watchdog)  # sending mode == 4
             
 
+            
             v_0_y,v_0_x = state.actual_TCP_speed[1],state.actual_TCP_speed[0]
             v_2_y,v_2_x = v_0_y,v_0_x
             # Init_pose[1],Init_pose[0] = P_out_y,P_out_x
-            # Init_pose[0] = P_out_x
             Init_pose[1] = P_out_y
+            start_time = time.time()
             if keyboard.is_pressed("esc") or running:  # Break loop with ESC-key
                 # info_csv_1 = [f"Constrain_x: {Constrain_x}, Constrain_y: {Constrain_y}, Posisjonering til lasten er 62,5 grade fra UR10, Y: -140 X: -55"]
                 # info_csv_2 = [f"Kp_x:{Kp_x}, Kp_y:{Kp_y}, Kd_x:{Kd_x}, Kd_y:{Kd_y}"]
@@ -159,29 +150,18 @@ def main():
                 #     writer.writerow(header)
                 #     for i in range(len(log_time)):
                 #         writer.writerow([log_time[i],log_x[i],log_distance[i]])
-                # print("Ferdig")   
+                print("Ferdig")   
                 state = con.receive()
                 # ====================mode 3===================
                 watchdog.input_int_register_0 = 3
                 con.send(watchdog)
                 con.send_pause()
                 con.disconnect()
-            if keyboard.is_pressed("q"):  # Break loop with ESC-key
-                Kp_y = Kp_y + 0.1
-            if keyboard.is_pressed("a"):  # Break loop with ESC-key
-                Kp_y = Kp_y - 0.1
-            if keyboard.is_pressed("w"):  # Break loop with ESC-key
-                Kd_y = Kd_y + 0.001
-            if keyboard.is_pressed("s"):  # Break loop with ESC-key
-                Kd_y = Kd_y - 0.001
-            if keyboard.is_pressed("e"):  # Break loop with ESC-key
-                Ki_y = Ki_y + 0.001
-            if keyboard.is_pressed("d"):  # Break loop with ESC-key
-                Ki_y = Ki_y - 0.001
+        
         if keyboard.is_pressed("k"):
-            reference_point_y = distance
-            reference_point_x = x_m
-            print(distance,x_m)
+            reference_point_y = 1.2
+            reference_point_x = 0.012723869889305114
+            print(distance)
             start_time_log = time.time()
             Controll = True
             print("Reference point its ready")            
