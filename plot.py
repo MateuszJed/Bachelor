@@ -33,7 +33,7 @@ def plot_graps(x,y,fig_num=1,title="",x_axis="x",y_axis="y",label="x",legend=Tru
 #_______________________Code_________________________
 
 #different folders:
-x_y_meter = "X-Y-meter_PID"
+x_y_meter = "X-Y-ulike_PID"
 
 
 files = find_csv_files(x_y_meter)
@@ -44,8 +44,12 @@ format = format_y
 for n, file in enumerate(files):
     t, x, y = read_csv_data_to_list(file)
     plot_graps(t, x, 1,"PID-controller in {}-direction ".format(format_x[0]), "Time[s]", "Error from ref [{}]".format(format_x[1]), f"Trail: {n}")
-
+x = np.ones(11)*0.01249997429549694
+plt.plot(x, color = 'blue', linewidth=1, linestyle='-.')
 for n, file in enumerate(files):
     t, x, y = read_csv_data_to_list(file)
     plot_graps(t, y, 2,"PID-controller in {}-direction ".format(format_y[0]), "Time[s]", "Error from ref [{}]".format(format_y[1]), f"Trail: {n}")
+x = np.ones(11)*-0.9055999364852907
+plt.plot(x, color = 'blue', linewidth=1, linestyle='-.')
+
 plt.show()

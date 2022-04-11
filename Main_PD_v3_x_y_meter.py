@@ -14,7 +14,7 @@ detected = False
 Controll = True
 run = True
 
-path = r"C:\Users\mateusz.jedynak\OneDrive - NTNU\Programmering\Python\Prosjekt\Bachelor\Source\Bachelor\Data\X-Y-meter_PID"
+path = r"C:\Users\mateusz.jedynak\OneDrive - NTNU\Programmering\Python\Prosjekt\Bachelor\Source\Bachelor\Data\X-Y-ulike_PID"
 
 
 #Config IntelRealsens
@@ -34,14 +34,12 @@ image = np.asanyarray(color_frame.get_data())
 log_x = []
 log_distance = []
 log_time = []
-def Camera_to_global_coords(x,y,z):
-    global_coords= np.array(np.array([[1,0,0,0],[0,0,1,-2.184],[0,-1,0,-0.662],[0,0,0,1]]))@np.array([[x],[y],[z],[1]])
-    return global_coords[0][0],global_coords[1][0],global_coords[2][0]
+
 def main():
     # Client has a few methods to get proxy to UA nodes that should always be in address space such as Root or Objects
     setp,con,watchdog,Init_pose = initial_communiation('169.254.182.10', 30004,500)
-    Kp_y, Kd_y, Ki_y = 0.5, 0.003,0.007
-    Kp_x, Kd_x, Ki_x = 0.5, 0.003,0.007
+    Kp_y, Kd_y, Ki_y = 0.5, 0.006,0.009
+    Kp_x, Kd_x, Ki_x = 0.5, 0.005,0.006
     v_0_x,v_2_x,v_0_y,v_2_y,t_0,t_1,t_f = 0,0,0,0,0,1.5,0.75
     prev_error_x, prev_error_y,reference_point_x,reference_point_y = 0,0,0,0
     eintegral_x,eintegral_y = 0,0
@@ -63,7 +61,9 @@ def main():
 
         #Object detection
         camera_coordinates, detected = ObjectDetection(image,color_frame, depth_frame, lower_color, upper_color, flip_cam)
-        x,y,z = Camera_to_global_coords(camera_coordinates[0],camera_coordinates[1],camera_coordinates[2])
+        x = camera_coordinates[0]
+        y = camera_coordinates[1]
+        z = camera_coordinates[2]
         xlogging = x
 
         #Delta time 
@@ -123,7 +123,7 @@ def main():
                 log_time.append(endtime)
                 log_x.append(x)
                 log_distance.append(y)
-                if endtime > 15:
+                if endtime > 10:
                     running = True
             else:
                 if watchdog.input_int_register_0 != 4:
@@ -139,7 +139,7 @@ def main():
                 info_csv_1 = [f"Posisjonering til lasten er 62,5 grade fra UR10, Y: -140 X: -55"]
                 info_csv_2 = [f"Kp_x:{Kp_x}, Kp_y:{Kp_y}, Kd_x:{Kd_x}, Kd_y:{Kd_y}, Ki_x: {Ki_x}, Ki_x: {Ki_y}"]
                 header = ["Time","X","Y"]
-                with open(r'C:\Users\mateusz.jedynak\OneDrive - NTNU\Programmering\Python\Prosjekt\Bachelor\Source\Bachelor\Data\X-Y-meter_PID\X-Y-meter_PID_{}.csv'.format(str(len(os.listdir(path)))), 'w',newline="") as f:
+                with open(r'C:\Users\mateusz.jedynak\OneDrive - NTNU\Programmering\Python\Prosjekt\Bachelor\Source\Bachelor\Data\X-Y-ulike_PID\X-Y-ulike_PID_{}.csv'.format(str(len(os.listdir(path)))), 'w',newline="") as f:
                     # create the csv writer
                     writer = csv.writer(f)
                     writer.writerow(info_csv_1)

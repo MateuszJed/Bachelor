@@ -43,9 +43,7 @@ def ObjectDetection(image,color_frame, depth_frame, lower_color, upper_color, fl
                                         ,depth_frame.get_distance(center[0]-5, center[1]+5)])
             distance = np.mean(distance[distance != 0])+0.07
 
-            color_intrin = color_frame.profile.as_video_stream_profile().intrinsics
-
-            intrin = color_intrin
+            intrin = color_frame.profile.as_video_stream_profile().intrinsics
             camera_coordinates_3D= np.array([rs.rs2_deproject_pixel_to_point(intrin, [center[0], center[1]],
                                                                               distance),
                                               rs.rs2_deproject_pixel_to_point(intrin, [center[0] + 5, center[1] + 5],
@@ -66,54 +64,55 @@ def ObjectDetection(image,color_frame, depth_frame, lower_color, upper_color, fl
             cv2.putText(image, "centroid", (center[0] + 10, center[1]), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 0, 255),1)
 
             
-            camera_coordinates = camera_x_meters,camera_y_meters,camera_z_meters
-
+            x,y,z = Camera_to_global_coords(camera_x_meters,camera_y_meters,camera_z_meters)
+            
             cv2.circle(image, center, 3, (0, 0, 255), -1)
             cv2.putText(image, "centroid", (center[0] + 10, center[1]), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 0, 255),1)
             # cv2.putText(image, "(" + str(x_cord) + ")", (center[0] + 10, center[1] + 15),
             #             cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2)
             # cv2.imshow("Result", image)
 
-            return camera_coordinates,True
+            return [x,y,z],True
         else:
             return [0,0,0],False
     else:
             return [0,0,0],False
 
 
-# if __name__ == "__main__":
-#     pipeline = rs.pipeline()
-#     config = rs.config()
-#     config.enable_stream(rs.stream.depth, 1280, 720, rs.format.z16, 30)
-#     config.enable_stream(rs.stream.color, 1280, 720, rs.format.bgr8, 30)
-#     pipeline.start(config)
-#     align_to = rs.stream.depth
-#     align = rs.align(align_to)
+if __name__ == "__main__":
+    pipeline = rs.pipeline()
+    config = rs.config()
+    config.enable_stream(rs.stream.depth, 1280, 720, rs.format.z16, 30)
+    config.enable_stream(rs.stream.color, 1280, 720, rs.format.bgr8, 30)
+    pipeline.start(config)
+    align_to = rs.stream.depth
+    align = rs.align(align_to)
 
-#     frames = pipeline.wait_for_frames()
-#     color_frame = frames.get_color_frame()
-#     image = np.asanyarray(color_frame.get_data())
+    frames = pipeline.wait_for_frames()
+    color_frame = frames.get_color_frame()
+    image = np.asanyarray(color_frame.get_data())
 
 
-#     lower_color, upper_color = Inital_color("yellowbox")
-#     flip_cam = False
-#     detected = False
-#     Controll = True
-#     run = True
+    lower_color, upper_color = Inital_color("yellowbox")
+    flip_cam = False
+    detected = False
+    Controll = True
+    run = True
     
-#     while 1:
-#         frames = pipeline.wait_for_frames()
-#         aligned_frames =  align.process(frames)
-#         depth_frame = aligned_frames.get_depth_frame()
-#         aligned_color_frame = aligned_frames.get_color_frame()
+    while 1:
+        frames = pipeline.wait_for_frames()
+        aligned_frames =  align.process(frames)
+        depth_frame = aligned_frames.get_depth_frame()
+        aligned_color_frame = aligned_frames.get_color_frame()
 
         
-#         image = np.asanyarray(aligned_color_frame.get_data())
-#         depth = np.asanyarray(depth_frame.get_data())
+        image = np.asanyarray(aligned_color_frame.get_data())
+        depth = np.asanyarray(depth_frame.get_data())
 
-#         # cv2.imshow("Reeeeesult", image)
-#         camera_coordinates,center, detected = ObjectDetection(image,color_frame, depth_frame, lower_color, upper_color, flip_cam)
-#         x,y,z = Camera_to_global_coords(camera_coordinates[0],camera_coordinates[1],camera_coordinates[2])
-        
-#         print(x*1000,y*1000,z*1000,center)
-#     pipeline.stop()
+        # cv2.imshow("Reeeeesult", image)
+        camera_coordinates, detected = ObjectDetection(image,color_frame, depth_frame, lower_color, upper_color, flip_cam)
+        x = camera_coordinates[0]
+        y = camera_coordinates[1]
+        z = camera_coordinates[2]
+        print(x*1000,y*1000,z*1000)
+    pipeline.stop()
