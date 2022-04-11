@@ -30,16 +30,12 @@ align = rs.align(align_to)
 frames = pipeline.wait_for_frames()
 color_frame = frames.get_color_frame()
 image = np.asanyarray(color_frame.get_data())
-height = image.shape[0]
-width = image.shape[1]
-Constrain_y = [-1.2,1.2,-0.3,-1.4]
-Constrain_x = [-width/2,width/2,-0.8,0.8]
 
 log_x = []
 log_distance = []
 log_time = []
 def Camera_to_global_coords(x,y,z):
-    global_coords= np.array(np.array([[1,0,0,0],[0,0,1,-2.108],[0,-1,0,-0.662],[0,0,0,1]]))@np.array([[x],[y],[z],[1]])
+    global_coords= np.array(np.array([[1,0,0,0],[0,0,1,-2.184],[0,-1,0,-0.662],[0,0,0,1]]))@np.array([[x],[y],[z],[1]])
     return global_coords[0][0],global_coords[1][0],global_coords[2][0]
 def main():
     # Client has a few methods to get proxy to UA nodes that should always be in address space such as Root or Objects
@@ -50,7 +46,7 @@ def main():
     v_0_x,v_2_x,v_0_y,v_2_y,t_0,t_1,t_f = 0,0,0,0,0,1.5,0.75
     prev_error_x, prev_error_y,reference_point_x,reference_point_y = 0,0,0,0
     eintegral_x,eintegral_y = 0,0
-    middle_point = 1.2368000507354737
+
     running = False
     start_time = time.time()
     watchdog.input_int_register_0 = 2
@@ -68,11 +64,11 @@ def main():
         
         cv2.imshow("Result", image)
         #Object detection
-        x_send, y_send,camera_coordinates,distance, mask, depth, detected = ObjectDetection(image, depth_frame,depth, lower_color,
-                                                                                 upper_color, height, width,middle_point, flip_cam)
-        
+        camera_coordinates, detected = ObjectDetection(image,color_frame, depth_frame, lower_color,
+                                                                                 upper_color, flip_cam)
+
         # xlogging = x_send
-        distance = round(distance,2)-2.1
+
 
         #Delta time 
         t = time.time() - start_time
@@ -83,6 +79,7 @@ def main():
         #     reference_point_y = -0.8
         #     reference_point_x = 0.012723869889305114
         x,y,z = Camera_to_global_coords(camera_coordinates[0],camera_coordinates[1],camera_coordinates[2])
+        print(x,y,z)
         if reference_point_x != 0 and reference_point_y !=0:
 
             #PID Y
