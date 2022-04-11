@@ -1,5 +1,4 @@
-from turtle import distance
-import cv2,math,torch,sys,asyncio,logging,time,keyboard,csv,os
+import cv2,math,sys,asyncio,logging,time,keyboard,csv,os
 import pyrealsense2 as rs
 import numpy as np
 from Scripts.Kinematic import inverse_kinematic
