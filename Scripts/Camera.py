@@ -44,16 +44,11 @@ def ObjectDetection(image,color_frame, depth_frame, lower_color, upper_color, fl
             distance = np.mean(distance[distance != 0])+0.07
 
             intrin = color_frame.profile.as_video_stream_profile().intrinsics
-            camera_coordinates_3D= np.array([rs.rs2_deproject_pixel_to_point(intrin, [center[0], center[1]],
-                                                                              distance),
-                                              rs.rs2_deproject_pixel_to_point(intrin, [center[0] + 5, center[1] + 5],
-                                                                              distance),
-                                              rs.rs2_deproject_pixel_to_point(intrin, [center[0] - 5, center[1] - 5],
-                                                                              distance),
-                                              rs.rs2_deproject_pixel_to_point(intrin, [center[0] + 5, center[1] - 5],
-                                                                              distance),
-                                              rs.rs2_deproject_pixel_to_point(intrin, [center[0] - 5, center[1] + 5],
-                                                                              distance)])
+            camera_coordinates_3D= np.array([rs.rs2_deproject_pixel_to_point(intrin, [center[0], center[1]], distance),
+                                            rs.rs2_deproject_pixel_to_point(intrin, [center[0] + 5, center[1] + 5], distance),
+                                            rs.rs2_deproject_pixel_to_point(intrin, [center[0] - 5, center[1] - 5], distance),
+                                            rs.rs2_deproject_pixel_to_point(intrin, [center[0] + 5, center[1] - 5], distance),
+                                            rs.rs2_deproject_pixel_to_point(intrin, [center[0] - 5, center[1] + 5], distance)])
 
 
             camera_x_meters = np.mean(camera_coordinates_3D[:,0])

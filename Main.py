@@ -1,7 +1,7 @@
 import cv2,math,time,keyboard,csv
 import pyrealsense2 as rs
 import numpy as np
-from Scripts.Kinematic import inverse_kinematic
+from Scripts.Kinematic import inverse_kinematic,forwad_kinematic
 from Scripts.Camera import ObjectDetection,Inital_color
 from Scripts.miscellaneous import _map,setp_to_list,list_to_setp
 from Scripts.UR10 import initial_communiation
