@@ -2,40 +2,34 @@ import cv2,math,time,keyboard,csv
 import pyrealsense2 as rs
 import numpy as np
 from Scripts.Kinematic import inverse_kinematic,forwad_kinematic
-from Scripts.Camera import ObjectDetection,Inital_color
+from Scripts.Camera import Inital_color,Object_3D_recontruction,Camera_top_to_qlobal_coords
 from Scripts.miscellaneous import _map,setp_to_list,list_to_setp
 from Scripts.UR10 import initial_communiation
 from Scripts.trajectory import asym_trajectory,inital_parameters_traj
 
-lower_color, upper_color = Inital_color("yellowbox")
-flip_cam = False
 detected = False
 show_cam = True
+flip_cam = False
 
 #Config IntelRealsens
+lower_color, upper_color = Inital_color("greenbox")
+
 pipeline = rs.pipeline()
 config = rs.config()
-config.enable_stream(rs.stream.depth, 1280, 720, rs.format.z16, 30)
 config.enable_stream(rs.stream.color, 1280, 720, rs.format.bgr8, 30)
 pipeline.start(config)
-align_to = rs.stream.depth
-align = rs.align(align_to)
-
-# Get information from IntelSens camera
-frames = pipeline.wait_for_frames()
-color_frame = frames.get_color_frame()
-image = np.asanyarray(color_frame.get_data())
 
 def main():
     # Client has a few methods to get proxy to UA nodes that should always be in address space such as Root or Objects
     setp,con,watchdog,Init_pose = initial_communiation('169.254.182.10', 30004,500)
 
     #PID values
-    Kp_y, Kd_y, Ki_y = 0.5, 0.003,0.006
-    Kp_x, Kd_x, Ki_x = 0.5, 0.003,0.006
+    Kp_y, Kd_y, Ki_y = 0.3, 0,0
+    Kp_x, Kd_x, Ki_x = 0.3, 0,0
     v_0_x,v_2_x,v_0_y,v_2_y,t_0,t_1,t_f = 0,0,0,0,0,1.5,0.75
     prev_error_x, prev_error_y,reference_point_x,reference_point_y = 0,0,0,0
     eintegral_x,eintegral_y = 0,0
+    distance = 1.396                                       # distance to object/payload
 
     running = False
     start_time = time.time()
@@ -44,25 +38,28 @@ def main():
     state = con.receive()
     while 1:
         frames = pipeline.wait_for_frames()
-        aligned_frames =  align.process(frames)
-        depth_frame = aligned_frames.get_depth_frame()
-        aligned_color_frame = aligned_frames.get_color_frame()
-
-        image = np.asanyarray(aligned_color_frame.get_data())
-        depth = np.asanyarray(depth_frame.get_data())
+        color_frame = frames.get_color_frame()
+        image = np.asanyarray(color_frame.get_data())
         #Object detection
-        object_coordinates, detected = ObjectDetection(image,color_frame, depth_frame, lower_color, upper_color, flip_cam,show_cam)
+        coordinates_pix, coordinates_meters = Object_3D_recontruction(  image,          color_frame,
+                                                                        lower_color,    upper_color, 
+                                                                        flip_cam,       distance)
+        forward_kinematic = state.actual_TCP_pose[:3]
+        angle_base = state.actual_q[0]
+        # print(angle_base,forward_kinematic)
+        global_coordinates = Camera_top_to_qlobal_coords(coordinates_meters, forward_kinematic, angle_base)
+
         if show_cam:
             cv2.imshow("Result", image)
             if cv2.waitKey(1):  # Break loop with ESC-key
                 pass
-
+        
         #Delta time 
         dt = time.time() - start_time
         start_time = time.time()
         if reference_point_x != 0 or reference_point_y !=0:
             #PID Y
-            error_y = (reference_point_y-object_coordinates[1])*-1
+            error_y = (reference_point_y-global_coordinates[1])*-1
             dedt = (error_y-prev_error_y)/dt #Derivative
             eintegral_y = eintegral_y + error_y*dt #Integral
 
@@ -70,7 +67,7 @@ def main():
             P_out_y = P_out_yy + reference_point_y
 
             #PID X
-            error_x = (reference_point_x-object_coordinates[0])*-1
+            error_x = (reference_point_x-global_coordinates[0])*-1
             dedt = (error_x-prev_error_x)/dt #Derivative
             eintegral_x = eintegral_x + error_x*dt #Integral
 
@@ -128,8 +125,8 @@ def main():
             con.send(watchdog)  # sending mode == 2
             state = con.receive()
         if keyboard.is_pressed("k"):
-            reference_point_x = object_coordinates[0]
-            reference_point_y = object_coordinates[1]
+            reference_point_x = global_coordinates[0]
+            reference_point_y = global_coordinates[1]
             start_time_log = time.time()
             print(f"Reference point its ready: {reference_point_x}, {reference_point_y}")            
 if __name__ == '__main__':
