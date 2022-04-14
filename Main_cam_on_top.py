@@ -29,7 +29,7 @@ def main():
     v_0_x,v_2_x,v_0_y,v_2_y,t_0,t_1,t_f = 0,0,0,0,0,1.5,0.75
     prev_error_x, prev_error_y,reference_point_x,reference_point_y = 0,0,0,0
     eintegral_x,eintegral_y = 0,0
-    distance = 1.396                                       # distance to object/payload
+    distance = 1.3                                       # distance to object/payload
 
     running = False
     start_time = time.time()
@@ -48,11 +48,11 @@ def main():
         angle_base = state.actual_q[0]
         # print(angle_base,forward_kinematic)
         global_coordinates = Camera_top_to_qlobal_coords(coordinates_meters, forward_kinematic, angle_base)
-
-        if show_cam:
-            cv2.imshow("Result", image)
-            if cv2.waitKey(1):  # Break loop with ESC-key
-                pass
+        # print(global_coordinates)
+        # if show_cam:
+        #     cv2.imshow("Result", image)
+        #     if cv2.waitKey(1):  # Break loop with ESC-key
+        #         pass
         
         #Delta time 
         dt = time.time() - start_time
@@ -96,7 +96,7 @@ def main():
                     q1, q2, q3 = inverse_kinematic(Init_pose[0], Init_pose[1], Init_pose[2])
                     q6 = q2 +q3 +math.pi/2
                     send_to_ur = [q1,q2,q3,-1.570796327,-3.141592654,q6]
-
+                    print(send_to_ur)
                     list_to_setp(setp, send_to_ur)
                     con.send(setp)  # sending new8 pose
                 except ValueError as info:
