@@ -1,0 +1,6 @@
+from cv2 import split
+
+
+x = "Kp_x:0.5, Kp_y:0.5, Kd_x:0, Kd_y:0, Ki_x: 0, Ki_x: 0, referance point 0.05044195296358579, -0.8069702824144198"
+
+print(split(x))

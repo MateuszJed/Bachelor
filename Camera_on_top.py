@@ -1,7 +1,7 @@
 """
 Code written based on servoj example from: https://github.com/davizinho5/RTDE_control_example
 """
-import cv2  # ,math,sys,asyncio,logging,time
+import cv2,cmath  # ,math,sys,asyncio,logging,time
 import pyrealsense2 as rs
 import numpy as np
 
@@ -50,6 +50,10 @@ def Object_3D_recontruction(image, color_frame, lower_color, upper_color, flip_c
 
             cv2.circle(image, [634, 358], 3, (0, 0, 255), -1)
             cv2.circle(image, center, 3, (0, 0, 255), -1)
+            cv2.circle(image, (center[0] + 5, center[1] + 5), 3, (0, 0, 255), -1)
+            cv2.circle(image, (center[0] - 5, center[1] - 5), 3, (0, 0, 255), -1)
+            cv2.circle(image, (center[0] + 5, center[1] - 5), 3, (0, 0, 255), -1)
+            cv2.circle(image, (center[0] - 5, center[1] + 5), 3, (0, 0, 255), -1)
             return center, (camera_x_meters, camera_y_meters, camera_z_meters)
         else:
             return (0, 0), (0, 0, 0)
@@ -72,7 +76,8 @@ def Inital_color(name_of_list):    # this function is not modified same as yours
     return np.array(color_list[:3]), np.array(color_list[3:])
 
 #===============================End of functions=================================================================================
-
+def Angle(UR_10_x,UR_10_y,object_x,object_y,l):
+    return cmath.asin((object_x-UR_10_x)/l).real,cmath.asin((object_y-UR_10_y)/l).real
 
 #the script used: 
 
@@ -106,9 +111,12 @@ def main():
         global_coordinates = Camera_top_to_qlobal_coords(coordinates_meters, translation, angle * np.pi / 180)
 
         # print camera coordinates:
-        print(f'Global coords:   X: {global_coordinates[0] * 1000}   Y: {global_coordinates[1] * 1000}    Z: {global_coordinates[2] * 1000}')
+        # print(f'Global coords:   X: {global_coordinates[0] * 1000}   Y: {global_coordinates[1] * 1000}    Z: {global_coordinates[2] * 1000}')
 
         # Diplay camera
+        angle = Angle()
+        cv2.putText(image, f"Angle_x : {reference_point_x}", (100,100), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255),2)
+
         cv2.imshow("Result", image)
         if cv2.waitKey(1) == 27:  # (Break loop with ESC-key)
             pipeline.stop()

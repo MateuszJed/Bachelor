@@ -62,6 +62,6 @@ def initial_communiation(Robot_IP,Robot_Port,FREQUENCY):
             con.send(setp)
             time.sleep(0.01)
             break
-    return setp,con,watchdog,state.actual_TCP_pose[:3]
+    return setp,con,watchdog,[0.0277,0.8845,0.7411]
 # # initial_communiation('169.254.182.10', 30004)
 

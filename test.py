@@ -1,4 +1,3 @@
-from mimetypes import init
 import cv2,math,time,keyboard,csv,cmath
 import pyrealsense2 as rs
 import numpy as np
@@ -59,10 +58,9 @@ def main():
         #Delta time 
         dt = time.time() - start_time
         start_time = time.time()
-        angle = Angle(forward_kinematic[0],forward_kinematic[1],global_coordinates[0]-0.06,global_coordinates[1]-0.0352,distance)
+        angle = Angle(forward_kinematic[0]+0.06,forward_kinematic[1]+0.1,global_coordinates[0],global_coordinates[1],distance)
         # # print(reference_point_x,reference_point_y,error_x,error_y,global_coordinates)
         cv2.putText(image, f"Angle : {angle[0]*180/math.pi,angle[1]*180/math.pi}", (100,100), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255),2)
-        # cv2.putText(image, f"Pos : {global_coordinates[0],global_coordinates[1]}", (100,150), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255),2)
         if reference_point_x != 0 or reference_point_y !=0:
             #PID X
             error_x = (reference_point_x-global_coordinates[0])*-1
@@ -79,16 +77,16 @@ def main():
             eintegral_y = eintegral_y + error_y*dt #Integral
 
             P_out_y = reference_point_y+  Kp_y*error_y + Kd_y*dedt + Ki_y*eintegral_y
-            print(error_x,error_y)
+
             # cv2.putText(image, f"reference_point_y: {reference_point_y}", (100,150), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255),2)
             # cv2.putText(image, f"error_x: {error_x}", (100,200), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255),2)
-            # # cv2.putText(image, f"error_y: {error_y}", (100,250), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255),2)
+            # cv2.putText(image, f"error_y: {error_y}", (100,250), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255),2)
             # cv2.putText(image, f"global_coordinates: {global_coordinates}", (100,300), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255),2)
             # cv2.putText(image, f"Actual TCP_POS: {state.actual_TCP_pose}", (100,350), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255),2)
             
-            # Trajectory x 0.0677 y  0.0082 x -0.0577
-            parameters_to_trajectory_x = inital_parameters_traj(Init_pose[0]-0.0474,P_out_x-0.0474,v_0_x,v_2_x,     0,      0.1,    0.05)
-            parameters_to_trajectory_y = inital_parameters_traj(Init_pose[1]-0.0352,P_out_y-0.0352,v_0_y,v_2_y,     0,      0.1,    0.05)
+            # Trajectory 
+            parameters_to_trajectory_y = inital_parameters_traj(Init_pose[1],P_out_y,v_0_y,v_2_y,     0,      0.1,    0.05)
+            parameters_to_trajectory_x = inital_parameters_traj(Init_pose[0],P_out_x,v_0_x,v_2_x,     0,      0.1,    0.05)
             # parameters_to_trajectory_x = inital_parameters_traj(Init_pose[0],P_out_x,v_0_x,v_2_x,     0,      1.5,    0.75)
             state = con.receive()
             if state.runtime_state > 1 and detected:
@@ -109,7 +107,7 @@ def main():
                     q1, q2, q3 = inverse_kinematic(Init_pose[0], Init_pose[1], Init_pose[2])
                     q6 = q2 +q3 +math.pi/2
                     send_to_ur = [q1,q2,q3,-1.570796327,-3.141592654,q6]
-                    # cv2.putText(image, f"send_to_ur: {send_to_ur}", (100,400), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255),2)
+                    cv2.putText(image, f"send_to_ur: {send_to_ur}", (100,400), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255),2)
 
                     list_to_setp(setp, send_to_ur)
                     con.send(setp)  # sending new8 pose

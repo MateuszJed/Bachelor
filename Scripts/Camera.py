@@ -103,13 +103,12 @@ def Object_3D_recontruction(image, color_frame, lower_color, upper_color, flip_c
             camera_y_meters = np.mean(camera_coordinates_3D[:, 1])
             camera_z_meters = np.mean(camera_coordinates_3D[:, 2])
 
-            cv2.circle(image, [634, 358], 3, (0, 0, 255), -1)
             cv2.circle(image, center, 3, (0, 0, 255), -1)
-            return center, (camera_x_meters, camera_y_meters, camera_z_meters)
+            return center, (camera_x_meters, camera_y_meters, camera_z_meters),True
         else:
-            return (0, 0), (0, 0, 0)
+            return (0, 0), (0, 0, 0),False
     else:
-        return (0, 0), (0, 0, 0)
+        return (0, 0), (0, 0, 0),False
 
 # if __name__ == "__main__":
 #     pipeline = rs.pipeline()

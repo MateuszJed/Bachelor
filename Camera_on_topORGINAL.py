@@ -52,7 +52,11 @@ def Object_3D_recontruction(image, color_frame, lower_color, upper_color, flip_c
             camera_z_meters = np.mean(camera_coordinates_3D[:, 2])
 
             cv2.circle(image, [634, 358], 3, (0, 0, 255), -1)
-            cv2.circle(image, center, 3, (0, 0, 255), -1)
+            cv2.circle(image, (center[0] + 5, center[1] + 5), 3, (0, 0, 255), -1)
+            cv2.circle(image, (center[0] - 5, center[1] - 5), 3, (0, 0, 255), -1)
+            cv2.circle(image, (center[0] + 5, center[1] - 5), 3, (0, 0, 255), -1)
+            cv2.circle(image, (center[0] - 5, center[1] + 5), 3, (0, 0, 255), -1)
+
             return x_pix, y_pix, camera_x_meters, camera_y_meters, camera_z_meters
         else:
             return 0, 0, 0, 0, 0
