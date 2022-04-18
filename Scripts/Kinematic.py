@@ -67,3 +67,45 @@ def forwad_kinematic(q1, q2, q3):
     T4 = T0@T1@T2@T3
     x, y, z = T4[0][3], T4[1][3], T4[2][3]
     return [x,y,z]
+
+import numpy as np
+
+
+def forwad_kinematic_v2(q1, q2, q3):
+
+  #D_H Parameters
+    alpha = np.array([0, np.pi/2, 0, 0])
+    d = np.array([0.128, 0, 0, 0.0128])  #0.1273 #0.01273   0.01252 - 0.0485
+    a = np.array([0, 0, -0.6124, -0.687])
+    q = np.array([q1, 0, q2, q3])
+  # 459 , -867.45 , 692.2 kamera
+    # Homogonous Transformations
+
+
+    T0 = np.array([[np.cos(q[0]), -np.sin(q[0])*np.cos(alpha[0]), np.sin(q[0])*np.sin(alpha[0]), a[0]*np.cos(q[0])],
+                   [np.sin(q[0]), np.cos(q[0])*np.cos(alpha[0]), -np.cos(q[0])*np.sin(alpha[0]), a[0]*np.sin(q[0])],
+                   [0, np.sin(alpha[0]), np.cos(alpha[0]), d[0]],
+                   [0, 0, 0, 1]])
+
+    T1 = np.array([[np.cos(q[1]), -np.sin(q[1])*np.cos(alpha[0]), np.sin(q[1])*np.sin(alpha[0]), a[1]*np.cos(q[1])],
+                   [np.sin(q[1]), np.cos(q[1])*np.cos(alpha[1]), -np.cos(q[1])*np.sin(alpha[1]), a[1]*np.sin(q[1])],
+                   [0, np.sin(alpha[1]), np.cos(alpha[1]), d[1]],
+                   [0, 0, 0, 1]])
+
+    T2 = np.array([[np.cos(q[2]), -np.sin(q[2])*np.cos(alpha[2]), np.sin(q[2])*np.sin(alpha[2]), a[2]*np.cos(q[2])],
+                   [np.sin(q[2]), np.cos(q[2])*np.cos(alpha[2]), -np.cos(q[2])*np.sin(alpha[2]), a[2]*np.sin(q[2])],
+                   [0, np.sin(alpha[2]), np.cos(alpha[2]), d[2]],
+                   [0, 0, 0, 1]])
+
+    T3 = np.array([[np.cos(q[3]), -np.sin(q[3])*np.cos(alpha[3]), np.sin(q[3])*np.sin(alpha[3]), a[3]*np.cos(q[3])],
+                   [np.sin(q[3]), np.cos(q[3])*np.cos(alpha[3]), -np.cos(q[3])*np.sin(alpha[3]), a[3]*np.sin(q[3])],
+                   [0, np.sin(alpha[3]), np.cos(alpha[3]), d[3]],
+                   [0, 0, 0, 1]])
+
+    T4 = T0@T1@T2@T3
+    x, y, z = T4[0][3], T4[1][3], T4[2][3]
+    return x,y,z
+
+# print(forwad_kinematic(75*np.pi/180,-72*np.pi/180,85*np.pi/180))
+#(483.7638261480349, -812.8635257523144, 682.6603656664298)  orginal
+# 459 , -867.45 , 692.2 kamera
