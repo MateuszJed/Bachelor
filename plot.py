@@ -33,7 +33,7 @@ def plot_graps(x,y,fig_num=1,title="",x_axis="x",y_axis="y",label="x",legend=Tru
 #_______________________Code_________________________
 
 #different folders:
-x_y_meter = "X-Y-angle-PID-cam-top"
+x_y_meter = "X-Y-meter_PID"
 
 
 files = find_csv_files(x_y_meter)

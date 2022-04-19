@@ -9,7 +9,7 @@ from Scripts.UR10 import initial_communiation
 from Scripts.trajectory import asym_trajectory,inital_parameters_traj
 
 detected = False
-show_cam = False
+show_cam = True
 flip_cam = False
 
 #Config IntelRealsens
@@ -36,8 +36,8 @@ def main():
     setp,con,watchdog,Init_pose = initial_communiation('169.254.182.10', 30004,500)
 
 
-    Kp_y, Kd_y, Ki_y = 0.5, 0.006,0.006
-    Kp_x, Kd_x, Ki_x = 0.5, 0.005,0.006
+    Kp_y, Kd_y, Ki_y = 0.5, 0.01,0.006
+    Kp_x, Kd_x, Ki_x = 0.5, 0.01,0.006
     v_0_x,v_2_x,v_0_y,v_2_y,t_0,t_1,t_f = 0,0,0,0,0,1.5,0.75
     prev_error_x, prev_error_y,reference_point_x,reference_point_y = 0,0,0,0
     eintegral_x,eintegral_y = 0,0
