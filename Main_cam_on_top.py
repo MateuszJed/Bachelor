@@ -28,10 +28,10 @@ def main():
     setp,con,watchdog,Init_pose = initial_communiation('169.254.182.10', 30004,500)
 
     #PID values
-    Kp_y, Kd_y, Ki_y = 0.5, 0,0
-    Kp_x, Kd_x, Ki_x = 0.5, 0,0
-    # Kp_y, Kd_y, Ki_y = 0.5, 0.006,0.006
-    # Kp_x, Kd_x, Ki_x = 0.5, 0.005,0.006
+    # Kp_y, Kd_y, Ki_y = 0.5, 0,0
+    # Kp_x, Kd_x, Ki_x = 0.5, 0,0
+    Kp_y, Kd_y, Ki_y = 0.5, 0.006,0.006
+    Kp_x, Kd_x, Ki_x = 0.5, 0.005,0.006
     v_0_x,v_2_x,v_0_y,v_2_y,t_0,t_1,t_f = 0,0,0,0,0,1.5,0.75
     prev_error_x, prev_error_y,reference_point_x,reference_point_y = 0,0,0,0
     eintegral_x,eintegral_y = 0,0
@@ -42,6 +42,8 @@ def main():
     watchdog.input_int_register_0 = 2
     con.send(watchdog)  # sending mode == 2
     state = con.receive()
+    prev_angle_x,prev_angle_y = 0,0
+    prev_velocity_x,prev_velocity_y = 0,0
     while 1:
         frames = pipeline.wait_for_frames()
         color_frame = frames.get_color_frame()
@@ -66,8 +68,11 @@ def main():
         # print(f"after int(): {angle}")
 
         # # print(reference_point_x,reference_point_y,error_x,error_y,global_coordinates)
-        cv2.putText(image, f"Angle : {angle[0]*180/math.pi,angle[1]*180/math.pi}", (100,100), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255),2)
+        cv2.putText(image, f"Angle : {angle[0]*180/math.pi,angle[1]*180/math.pi}", (100,100), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255),2)
         # cv2.putText(image, f"Pos : {global_coordinates[0],global_coordinates[1]}", (100,150), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255),2)
+        
+
+
         if reference_point_x != 0 or reference_point_y !=0:
             #PID X
             error_x = (reference_point_x-global_coordinates[0])*-1
@@ -84,11 +89,29 @@ def main():
             eintegral_y = eintegral_y + error_y*dt #Integral
 
             P_out_y = reference_point_y+  Kp_y*error_y + Kd_y*dedt + Ki_y*eintegral_y
+
+                    # Angular acceleration
+            x_velocity = (P_out_x-prev_angle_x)/(dt)
+            prev_angle_x = P_out_x
+
+            x_acceleration = (x_velocity-prev_velocity_x)/dt
+            prev_velocity_x = x_velocity
+
+            # Angular acceleration
+            y_velocity = (P_out_y-prev_angle_y)/(dt)
+            prev_angle_y = P_out_y
+
+            y_acceleration = (y_velocity-prev_velocity_y)/dt
+            prev_velocity_y = y_velocity
             # print(error_x,error_y)
             # cv2.putText(image, f"reference_point_y: {reference_point_y}", (100,150), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255),2)
             # cv2.putText(image, f"error_x: {error_x}", (100,200), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255),2)
             # # cv2.putText(image, f"error_y: {error_y}", (100,250), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255),2)
-            # cv2.putText(image, f"global_coordinates: {global_coordinates}", (100,300), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255),2)
+            cv2.putText(image, f"global coordinates: {global_coordinates}", (100,150), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255),2)
+            cv2.putText(image, f"X velocity: {x_velocity}", (100,200), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255),2)
+            cv2.putText(image, f"Y velocity: {y_velocity}", (100,250), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255),2)
+            cv2.putText(image, f"X acceleration: {x_acceleration}", (100,300), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255),2)
+            cv2.putText(image, f"Y acceleration: {y_acceleration}", (100,350), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255),2)
             # cv2.putText(image, f"Actual TCP_POS: {state.actual_TCP_pose}", (100,350), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255),2)
             
             # Trajectory x 0.0677 y  0.0082 x -0.0577

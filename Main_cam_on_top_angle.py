@@ -115,8 +115,13 @@ def main():
 
             pos_y,v,a = trap_integrate(dt,y_acceleration,y_velocity,pos_y,prev_a_y)
             prev_a_y = y_acceleration
-
-
+            
+            cv2.putText(image, f"Angle : {angle[0]*180/math.pi,angle[1]*180/math.pi}", (100,100), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255),2)
+            cv2.putText(image, f"global coordinates: {global_coordinates}", (100,150), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255),2)
+            cv2.putText(image, f"X velocity: {x_velocity}", (100,200), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255),2)
+            cv2.putText(image, f"Y velocity: {y_velocity}", (100,250), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255),2)
+            cv2.putText(image, f"X acceleration: {x_acceleration}", (100,300), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255),2)
+            cv2.putText(image, f"Y acceleration: {y_acceleration}", (100,350), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255),2)
 
             # cv2.putText(image, f"P_out_x : {P_out_x}", (100,200), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255),2)
             # cv2.putText(image, f"x_acceleration : {x_acceleration}", (100,250), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255),2)
