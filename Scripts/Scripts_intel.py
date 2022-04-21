@@ -91,7 +91,7 @@ def videoCalibration():
     lower_color = np.array(color_list[:3])
     upper_color = np.array(color_list[3:])
     while True:
-      now = time.time()
+      # now = time.time()
       frames = pipeline.wait_for_frames()
       color_frame = frames.get_color_frame()
       # Convert images to numpy arrays
@@ -121,10 +121,13 @@ def videoCalibration():
                       1)
           cv2.putText(image, "(" + str(center[0]) + "," + str(center[1]) + ")", (center[0] + 10, center[1] + 15),
                       cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 0, 255), 1)
-      cv2.imshow("Result", image)
       # cv2.imshow("Mask", mask)
-      dt = time.time() - now
-      print(1.0/dt)
+      # dt = time.time() - now
+      # if dt == 0:
+      #   dt = 1
+      # cv2.putText(image, "FPS: " + str(round(1/dt,2)), (848-200,100),
+      #                 cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 75, 75), 2)
+      cv2.imshow("Result", image)
       if cv2.waitKey(1) == 27:  # Break loop with ESC-key
           pipeline.stop()
           break   
