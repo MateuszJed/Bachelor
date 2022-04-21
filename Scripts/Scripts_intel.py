@@ -7,8 +7,8 @@ from matplotlib import pyplot as plt
 # Configure depth and color streams
 pipeline = rs.pipeline()
 config = rs.config()
-# config.enable_stream(rs.stream.color, 848,480, rs.format.bgr8, 30)
-config.enable_stream(rs.stream.color, 1280, 720, rs.format.bgr8, 30)
+config.enable_stream(rs.stream.color, 848,480, rs.format.bgr8, 30)
+# config.enable_stream(rs.stream.color, 1280, 720, rs.format.bgr8, 30)
 pipeline.start(config)
 
 # cap = cv2.VideoCapture(0)
@@ -43,7 +43,7 @@ def colorCalibration():
         image = np.asanyarray(color_frame.get_data())
         # succes, image = cap.read()
         	
-        image = cv2.flip(image, 0)
+        image = cv2.flip(image, 1)
         hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
         s_r = cv2.getTrackbarPos('S ROWS', 'Trackbars')
