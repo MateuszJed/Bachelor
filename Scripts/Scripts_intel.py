@@ -2,15 +2,12 @@
 #cd .\Prosjekt\Bachelor_object_detection\Color_detection\
 import pyrealsense2 as rs
 import numpy as np
-import cv2
-import torch
+import cv2,time
 from matplotlib import pyplot as plt
 # Configure depth and color streams
 pipeline = rs.pipeline()
 config = rs.config()
-
-pipeline = rs.pipeline()
-config = rs.config()
+# config.enable_stream(rs.stream.color, 848,480, rs.format.bgr8, 30)
 config.enable_stream(rs.stream.color, 1280, 720, rs.format.bgr8, 30)
 pipeline.start(config)
 
@@ -94,38 +91,40 @@ def videoCalibration():
     lower_color = np.array(color_list[:3])
     upper_color = np.array(color_list[3:])
     while True:
-        frames = pipeline.wait_for_frames()
-        color_frame = frames.get_color_frame()
+      now = time.time()
+      frames = pipeline.wait_for_frames()
+      color_frame = frames.get_color_frame()
+      # Convert images to numpy arrays
+      image = np.asanyarray(color_frame.get_data())
+      hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+      # Convert RGB to HSV
+      hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+      # Creates a mask
+      mask = cv2.inRange(hsv, lower_color, upper_color)
+      # Enlarge the mask
+      kernel = np.ones((5, 5), np.uint8)
+      dilation = cv2.dilate(mask, kernel)
+      # Finding the contours
+      contours, hierarchy = cv2.findContours(dilation, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
-        # Convert images to numpy arrays
-        image = np.asanyarray(color_frame.get_data())
-        hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-        # Convert RGB to HSV
-        hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-        # Creates a mask
-        mask = cv2.inRange(hsv, lower_color, upper_color)
-        # Enlarge the mask
-        kernel = np.ones((5, 5), np.uint8)
-        dilation = cv2.dilate(mask, kernel)
-        # Finding the contours
-        contours, hierarchy = cv2.findContours(dilation, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-
-        if len(contours) > 0:
-          box = max(contours, key=cv2.contourArea)
-          if cv2.contourArea(box) > 1800:
-            ball = max(contours, key=cv2.contourArea)     
-            area = cv2.contourArea(ball) 
-            print(area)
-            cv2.drawContours(image, ball, -1, (0, 255, 0), 2)
-            M = cv2.moments(ball)
-            center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
-            cv2.circle(image, center, 3, (0, 0, 255), -1)
-            cv2.putText(image, "centroid", (center[0] + 10, center[1]), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 0, 255),
-                        1)
-            cv2.putText(image, "(" + str(center[0]) + "," + str(center[1]) + ")", (center[0] + 10, center[1] + 15),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 0, 255), 1)
-        cv2.imshow("Result", image)
-        cv2.imshow("Mask", mask)
-        if cv2.waitKey(1) == 27:  # Break loop with ESC-key
-            pipeline.stop()
-            break   
+      if len(contours) > 0:
+        box = max(contours, key=cv2.contourArea)
+        if cv2.contourArea(box) > 1800:
+          ball = max(contours, key=cv2.contourArea)     
+          area = cv2.contourArea(ball) 
+          # print(area)
+          cv2.drawContours(image, ball, -1, (0, 255, 0), 2)
+          M = cv2.moments(ball)
+          center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
+          cv2.circle(image, center, 3, (0, 0, 255), -1)
+          cv2.putText(image, "centroid", (center[0] + 10, center[1]), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 0, 255),
+                      1)
+          cv2.putText(image, "(" + str(center[0]) + "," + str(center[1]) + ")", (center[0] + 10, center[1] + 15),
+                      cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 0, 255), 1)
+      cv2.imshow("Result", image)
+      # cv2.imshow("Mask", mask)
+      dt = time.time() - now
+      print(1.0/dt)
+      if cv2.waitKey(1) == 27:  # Break loop with ESC-key
+          pipeline.stop()
+          break   

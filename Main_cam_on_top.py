@@ -17,7 +17,8 @@ lower_color, upper_color = Inital_color("yellowbox")
 
 pipeline = rs.pipeline()
 config = rs.config()
-config.enable_stream(rs.stream.color, 1280, 720, rs.format.bgr8, 30)
+# config.enable_stream(rs.stream.color, 1280, 720, rs.format.bgr8, 30)
+config.enable_stream(rs.stream.color, 848,480, rs.format.bgr8, 60)
 pipeline.start(config)
 #===============================End of functions=================================================================================
 def Angle(UR_10_x,UR_10_y,object_x,object_y,l):
@@ -48,6 +49,7 @@ def main():
         frames = pipeline.wait_for_frames()
         color_frame = frames.get_color_frame()
         image = np.asanyarray(color_frame.get_data())
+
         #Object detection
         coordinates_pix, coordinates_meters,detected = Object_3D_recontruction( image,          color_frame,
                                                                                 lower_color,    upper_color, 
@@ -56,12 +58,12 @@ def main():
         forward_kinematic_rope = forwad_kinematic_v2(state.actual_q[0],state.actual_q[1],state.actual_q[2])
         angle_base = state.actual_q[0]
         # print(angle_base,forward_kinematic)
-        global_coordinates = Camera_top_to_qlobal_coords(coordinates_meters, forward_kinematic, angle_base)
-        
+        global_coordinates = Camera_top_to_qlobal_coords(coordinates_meters, forward_kinematic, angle_base) 
 
         #Delta time 
         dt = time.time() - start_time
         start_time = time.time()
+
         angle = Angle(forward_kinematic_rope[0],forward_kinematic_rope[1],global_coordinates[0],global_coordinates[1],distance)
         # print(f"bef int(): {angle}")
         angle = round(angle[0],3),round(angle[1],3)
@@ -72,7 +74,7 @@ def main():
         # cv2.putText(image, f"Pos : {global_coordinates[0],global_coordinates[1]}", (100,150), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255),2)
         
 
-
+        print(1/dt)
         if reference_point_x != 0 or reference_point_y !=0:
             #PID X
             error_x = (reference_point_x-global_coordinates[0])*-1
@@ -182,9 +184,9 @@ def main():
             if cv2.waitKey(1):  # Break loop with ESC-key
                 pass
 if __name__ == '__main__':
-    try:
-        main()
-    except Exception as e:
-        print(e)
-        pipeline.stop()
+    # try:
+    main()
+    # except Exception as e:
+    #     print(e)
+    #     pipeline.stop()
 
