@@ -150,6 +150,8 @@ def main():
                     writer.writerow(header)
                     for i in range(len(log_time)):
                         writer.writerow([log_time[i],log_x[i],log_distance[i]])
+
+                cv2.waitKey(0) == ord("q")
                 print("Ferdig")   
                 state = con.receive()
                 # ====================mode 3===================
