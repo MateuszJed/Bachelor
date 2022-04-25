@@ -20,6 +20,7 @@ config = rs.config()
 # config.enable_stream(rs.stream.color, 1280, 720, rs.format.bgr8, 30)
 config.enable_stream(rs.stream.color, 848,480, rs.format.bgr8, 60)
 pipeline.start(config)
+
 #===============================End of functions=================================================================================
 def Angle(UR_10_x,UR_10_y,object_x,object_y,l):
     return cmath.asin((object_x-UR_10_x)/l).real,cmath.asin((object_y-UR_10_y)/l).real
@@ -45,6 +46,8 @@ def main():
     state = con.receive()
     prev_angle_x,prev_angle_y = 0,0
     prev_velocity_x,prev_velocity_y = 0,0
+    K = np.array([[316.2277660168385, 411.4651103132678, -65.82013559986018, -7.307886819799695]])
+
     while 1:
         frames = pipeline.wait_for_frames()
         color_frame = frames.get_color_frame()
@@ -74,49 +77,12 @@ def main():
         # cv2.putText(image, f"Pos : {global_coordinates[0],global_coordinates[1]}", (100,150), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255),2)
         
         if reference_point_x != 0 or reference_point_y !=0:
-            #PID X
-            error_x = (reference_point_x-global_coordinates[0])*-1
-            dedt = (error_x-prev_error_x)/dt #Derivative
-            prev_error_x = error_x
-            eintegral_x = eintegral_x + error_x*dt #Integralk
-
-            P_out_x = reference_point_x + Kp_x*error_x + Kd_x*dedt + Ki_x*eintegral_x
-
-            #PID Y
-            error_y = (reference_point_y-global_coordinates[1])*-1
-            dedt = (error_y-prev_error_y)/dt #Derivative
-            prev_error_y = error_y
-            eintegral_y = eintegral_y + error_y*dt #Integral
-
-            P_out_y = reference_point_y+  Kp_y*error_y + Kd_y*dedt + Ki_y*eintegral_y
-
                     # Angular acceleration
-            x_velocity = (P_out_x-prev_angle_x)/(dt)
-            prev_angle_x = P_out_x
-
-            x_acceleration = (x_velocity-prev_velocity_x)/dt
-            prev_velocity_x = x_velocity
-
-            # Angular acceleration
-            y_velocity = (P_out_y-prev_angle_y)/(dt)
-            prev_angle_y = P_out_y
-
-            y_acceleration = (y_velocity-prev_velocity_y)/dt
-            prev_velocity_y = y_velocity
-            # print(error_x,error_y)
-            # cv2.putText(image, f"reference_point_y: {reference_point_y}", (100,150), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255),2)
-            # cv2.putText(image, f"error_x: {error_x}", (100,200), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255),2)
-            # # cv2.putText(image, f"error_y: {error_y}", (100,250), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255),2)
-            cv2.putText(image, f"global coordinates: {global_coordinates}", (100,150), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255),2)
-            cv2.putText(image, f"X velocity: {x_velocity}", (100,200), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255),2)
-            cv2.putText(image, f"Y velocity: {y_velocity}", (100,250), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255),2)
-            cv2.putText(image, f"X acceleration: {x_acceleration}", (100,300), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255),2)
-            cv2.putText(image, f"Y acceleration: {y_acceleration}", (100,350), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255),2)
-            # cv2.putText(image, f"Actual TCP_POS: {state.actual_TCP_pose}", (100,350), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255),2)
-            
-            # Trajectory x 0.0677 y  0.0082 x -0.0577
-            parameters_to_trajectory_x = inital_parameters_traj(Init_pose[0]-0.0474,P_out_x-0.0474,v_0_x,v_2_x,     0,      0.1,    0.05)
-            parameters_to_trajectory_y = inital_parameters_traj(Init_pose[1]-0.0352,P_out_y-0.0352,v_0_y,v_2_y,     0,      0.1,    0.05)
+            u = global_coordinates[0]-global_coordinates[0]*K[0][0]
+            print(u)
+            # # Trajectory x 0.0677 y  0.0082 x -0.0577
+            # parameters_to_trajectory_x = inital_parameters_traj(Init_pose[0]-0.0474,P_out_x-0.0474,v_0_x,v_2_x,     0,      0.1,    0.05)
+            # parameters_to_trajectory_y = inital_parameters_traj(Init_pose[1]-0.0352,P_out_y-0.0352,v_0_y,v_2_y,     0,      0.1,    0.05)
             # parameters_to_trajectory_x = inital_parameters_traj(Init_pose[0],P_out_x,v_0_x,v_2_x,     0,      1.5,    0.75)
             state = con.receive()
             if state.runtime_state > 1 and detected:
@@ -124,30 +90,30 @@ def main():
                     watchdog.input_int_register_0 = 2
                     con.send(watchdog)  # sending mode == 4
 
-                #Trajectory for y
-                q_y, dq_y, ddq_y = asym_trajectory(dt,parameters_to_trajectory_y)
-                Init_pose[1] = q_y
+                # #Trajectory for y
+                # q_y, dq_y, ddq_y = asym_trajectory(dt,parameters_to_trajectory_y)
+                # Init_pose[1] = q_y
 
-                #Trajectory for x
-                q_x, dq_x, ddq_x = asym_trajectory(dt,parameters_to_trajectory_x)
-                Init_pose[0] = q_x
+                # #Trajectory for x
+                # q_x, dq_x, ddq_x = asym_trajectory(dt,parameters_to_trajectory_x)
+                # Init_pose[0] = q_x
 
-                # Inverse Kinematic
-                try: 
-                    q1, q2, q3 = inverse_kinematic(Init_pose[0], Init_pose[1], Init_pose[2])
-                    q6 = q2 +q3 +math.pi/2
-                    send_to_ur = [q1,q2,q3,-1.570796327,-3.141592654,q6]
-                    # cv2.putText(image, f"send_to_ur: {send_to_ur}", (100,400), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255),2)
+                # # Inverse Kinematic
+                # try: 
+                #     q1, q2, q3 = inverse_kinematic(Init_pose[0], Init_pose[1], Init_pose[2])
+                #     q6 = q2 +q3 +math.pi/2
+                #     send_to_ur = [q1,q2,q3,-1.570796327,-3.141592654,q6]
+                #     # cv2.putText(image, f"send_to_ur: {send_to_ur}", (100,400), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255),2)
 
-                    list_to_setp(setp, send_to_ur)
-                    con.send(setp)  # sending new8 pose
-                except ValueError as info:
-                    print(info)
+                #     list_to_setp(setp, send_to_ur)
+                #     con.send(setp)  # sending new8 pose
+                # except ValueError as info:
+                #     print(info)
 
                 #Update values
                 v_0_y,v_0_x = state.actual_TCP_speed[1],state.actual_TCP_speed[0]
                 v_2_y,v_2_x = v_0_y,v_0_x
-                Init_pose[1],Init_pose[0] = P_out_y,P_out_x
+                # Init_pose[1],Init_pose[0] = P_out_y,P_out_x
             else:
                 if watchdog.input_int_register_0 != 4:
                     watchdog.input_int_register_0 = 4

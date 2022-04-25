@@ -109,7 +109,7 @@ def videoCalibration():
 
       if len(contours) > 0:
         box = max(contours, key=cv2.contourArea)
-        if cv2.contourArea(box) > 1800:
+        if cv2.contourArea(box) > 1000:
           ball = max(contours, key=cv2.contourArea)     
           area = cv2.contourArea(ball) 
           # print(area)
