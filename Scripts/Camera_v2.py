@@ -2,7 +2,7 @@ import cv2,cmath
 import numpy as np
 import pyrealsense2 as rs
 def Camera_to_global_coords(x,y,z):
-    global_coords= np.array(np.array([[1,0,0,0],[0,0,1,-2.184],[0,-1,0,-0.662],[0,0,0,1]]))@np.array([[x],[y],[z],[1]])
+    global_coords= np.array(np.array([[1,0,0,0],[0,0,1,-3.019],[0,-1,0,-0.662],[0,0,0,1]]))@np.array([[x],[y],[z],[1]])
     return global_coords[0][0],global_coords[1][0],global_coords[2][0]
 def Inital_color(name_of_list):
     # """ Calibration center of body."""
@@ -31,7 +31,7 @@ def ObjectDetection(image,color_frame, depth_frame, lower_color, upper_color, fl
     contours, hierarchy = cv2.findContours(dilation, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     if len(contours) > 0:
         box = max(contours, key=cv2.contourArea)
-        if cv2.contourArea(box) > 1500:
+        if cv2.contourArea(box) > 1000:
             cv2.drawContours(image, box, -1, (0, 255, 0), 2)
             M = cv2.moments(box)
             center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
@@ -79,40 +79,40 @@ def ObjectDetection(image,color_frame, depth_frame, lower_color, upper_color, fl
             return [0,0,0],False
 
 
-if __name__ == "__main__":
-    pipeline = rs.pipeline()
-    config = rs.config()
-    config.enable_stream(rs.stream.depth, 1280, 720, rs.format.z16, 30)
-    config.enable_stream(rs.stream.color, 1280, 720, rs.format.bgr8, 30)
-    pipeline.start(config)
-    align_to = rs.stream.depth
-    align = rs.align(align_to)
+# if __name__ == "__main__":
+#     pipeline = rs.pipeline()
+#     config = rs.config()
+#     config.enable_stream(rs.stream.depth, 1280, 720, rs.format.z16, 30)
+#     config.enable_stream(rs.stream.color, 1280, 720, rs.format.bgr8, 30)
+#     pipeline.start(config)
+#     align_to = rs.stream.depth
+#     align = rs.align(align_to)
 
-    frames = pipeline.wait_for_frames()
-    color_frame = frames.get_color_frame()
-    image = np.asanyarray(color_frame.get_data())
+#     frames = pipeline.wait_for_frames()
+#     color_frame = frames.get_color_frame()
+#     image = np.asanyarray(color_frame.get_data())
 
 
-    lower_color, upper_color = Inital_color("yellowbox")
-    flip_cam = False
-    detected = False
-    Controll = True
-    run = True
+#     lower_color, upper_color = Inital_color("yellowbox")
+#     flip_cam = False
+#     detected = False
+#     Controll = True
+#     run = True
     
-    while 1:
-        frames = pipeline.wait_for_frames()
-        aligned_frames =  align.process(frames)
-        depth_frame = aligned_frames.get_depth_frame()
-        aligned_color_frame = aligned_frames.get_color_frame()
+#     while 1:
+#         frames = pipeline.wait_for_frames()
+#         aligned_frames =  align.process(frames)
+#         depth_frame = aligned_frames.get_depth_frame()
+#         aligned_color_frame = aligned_frames.get_color_frame()
 
         
-        image = np.asanyarray(aligned_color_frame.get_data())
-        depth = np.asanyarray(depth_frame.get_data())
+#         image = np.asanyarray(aligned_color_frame.get_data())
+#         depth = np.asanyarray(depth_frame.get_data())
 
-        # cv2.imshow("Reeeeesult", image)
-        camera_coordinates, detected = ObjectDetection(image,color_frame, depth_frame, lower_color, upper_color, flip_cam)
-        x = camera_coordinates[0]
-        y = camera_coordinates[1]
-        z = camera_coordinates[2]
-        print(x*1000,y*1000,z*1000)
-    pipeline.stop()
+#         # cv2.imshow("Reeeeesult", image)
+#         camera_coordinates, detected = ObjectDetection(image,color_frame, depth_frame, lower_color, upper_color, flip_cam)
+#         x = camera_coordinates[0]
+#         y = camera_coordinates[1]
+#         z = camera_coordinates[2]
+#         print(x*1000,y*1000,z*1000)
+#     pipeline.stop()
