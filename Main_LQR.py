@@ -94,23 +94,21 @@ def main():
     # angle = [7*math.pi/4,0,0,0]
     # angle = [math.pi/4,0,0,0]
     # angle = [0,0,0,0]
+    pos_to_send = 0
     while 1:
         #Delta time 
 
         frames = pipeline.wait_for_frames()
         color_frame = frames.get_color_frame()
         image = np.asanyarray(color_frame.get_data())
-        pos_to_send = 0
         #Object detection
         coordinates_pix, coordinates_meters,detected = Object_3D_recontruction( image,          color_frame,
                                                                                 lower_color,    upper_color, 
                                                                                 flip_cam,       distance)
         forward_kinematic = state.actual_TCP_pose[:3]
-        forward_kinematic = [-19.4/ 1000, -931.84 / 1000, 712.92 / 1000]
-        forward_kinematic_rope = forwad_kinematic_v2(91.31*cmath.pi/180 ,-70.56*cmath.pi/180,68.83*cmath.pi/180)
-        angle_base = 91.31*cmath.pi/180 
+        forward_kinematic_rope = forwad_kinematic_v2(state.actual_q[0],state.actual_q[1],state.actual_q[2])
         # print(angle_base,forward_kinematic)
-        global_coordinates = Camera_top_to_qlobal_coords(coordinates_meters, forward_kinematic, angle_base) 
+        global_coordinates = Camera_top_to_qlobal_coords(coordinates_meters, forward_kinematic, state.actual_q[0]) 
 
         angle = Angle(forward_kinematic_rope[0],forward_kinematic_rope[1],global_coordinates[0],global_coordinates[1],distance)
         # cv2.putText(image, f"Angle : {angle[0]*180/math.pi,angle[1]*180/math.pi}", (100,100), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255),2)
@@ -135,10 +133,10 @@ def main():
 
             x_double_dot = (1/DEMP_COFF)*(-PAYLOAD_MASS**2*ROPE_LENGTH**2*GRAVITY*math.cos(angle[0])*math.sin(angle[0]) + PAYLOAD_MASS*ROPE_LENGTH**2*(PAYLOAD_MASS*ROPE_LENGTH*x_velocity**2*math.sin(angle[0]) - DEMP_COFF*x_velocity_pos)) + PAYLOAD_MASS*ROPE_LENGTH*ROPE_LENGTH*(1/DEMP_COFF)*F
             theta_double_dot = (1/DEMP_COFF)*((PAYLOAD_MASS+UR_MASS)*PAYLOAD_MASS*GRAVITY*ROPE_LENGTH*math.sin(angle[0]) - PAYLOAD_MASS*ROPE_LENGTH*math.cos(angle[0])*(PAYLOAD_MASS*ROPE_LENGTH*x_velocity**2*math.sin(angle[0]) - DEMP_COFF*x_velocity)) - PAYLOAD_MASS*ROPE_LENGTH*math.cos(angle[0])*(1/DEMP_COFF)*F
-            pos_to_send += ((dt**2) * x_double_dot) + (((pos_to_send- prev_error_x) * dt) / start_time)
+            pos_to_send = ((dt**2) * x_double_dot) + (((pos_to_send- prev_pos) * dt) / start_time)
             # print(pos_to_send)
             cv2.putText(image, f"pos_to_send : {pos_to_send}", (100,100), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255),2)
-            parameters_to_trajectory_x = inital_parameters_traj(Init_pose[0],pos_to_send,v_0_x,v_2_x,     0,      0.1,    0.05)
+            parameters_to_trajectory_x = inital_parameters_traj(Init_pose[0],pos_to_send,v_0_x,v_2_x,     0,      0.75,    0.35)
             # print(pos_to_send,Init_pose[0])
             state = con.receive()
             if state.runtime_state > 1 and detected:

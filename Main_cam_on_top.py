@@ -113,7 +113,7 @@ def main():
             cv2.putText(image, f"X acceleration: {x_acceleration}", (100,300), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255),2)
             cv2.putText(image, f"Y acceleration: {y_acceleration}", (100,350), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255),2)
             # cv2.putText(image, f"Actual TCP_POS: {state.actual_TCP_pose}", (100,350), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255),2)
-            
+            print(P_out_x)
             # Trajectory x 0.0677 y  0.0082 x -0.0577
             parameters_to_trajectory_x = inital_parameters_traj(Init_pose[0]-0.0474,P_out_x-0.0474,v_0_x,v_2_x,     0,      0.1,    0.05)
             parameters_to_trajectory_y = inital_parameters_traj(Init_pose[1]-0.0352,P_out_y-0.0352,v_0_y,v_2_y,     0,      0.1,    0.05)
