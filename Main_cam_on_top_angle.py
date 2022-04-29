@@ -85,17 +85,17 @@ def main():
             prev_error_x = error_x
             eintegral_x = eintegral_x + error_x*dt #Integralk
 
-            P_out_x = Kp_x*error_x + Kd_x*dedt + Ki_x*eintegral_x
+            pos_x = Kp_x*error_x + Kd_x*dedt + Ki_x*eintegral_x
 
             # Angular acceleration
-            x_velocity = (P_out_x-prev_angle_x)/(dt)
-            prev_angle_x = P_out_x
+            # x_velocity = (P_out_x-prev_angle_x)/(dt)
+            # prev_angle_x = P_out_x
 
-            x_acceleration = (x_velocity-prev_velocity_x)/dt
-            prev_velocity_x = x_velocity
+            # x_acceleration = (x_velocity-prev_velocity_x)/dt
+            # prev_velocity_x = x_velocity
 
-            pos_x,v,a = trap_integrate(dt,x_acceleration,x_velocity,pos_x,prev_a_x)
-            prev_a_x = x_acceleration
+            # pos_x,v,a = trap_integrate(dt,x_acceleration,x_velocity,pos_x,prev_a_x)
+            # prev_a_x = x_acceleration
             # print(reference_point_x-forward_kinematic_rope[0],reference_point_y-forward_kinematic_rope[1])
 
             #PID y
@@ -104,24 +104,24 @@ def main():
             prev_error_y = error_y
             eintegral_y = eintegral_y + error_y*dt #Integralk
 
-            P_out_y = Kp_y*error_y + Kd_y*dedt + Ki_y*eintegral_y
+            pos_y = Kp_y*error_y + Kd_y*dedt + Ki_y*eintegral_y
 
-            # Angular acceleration
-            y_velocity = (P_out_y-prev_angle_y)/(dt)
-            prev_angle_y = P_out_y
+            # # Angular acceleration
+            # y_velocity = (P_out_y-prev_angle_y)/(dt)
+            # prev_angle_y = P_out_y
 
-            y_acceleration = (y_velocity-prev_velocity_y)/dt
-            prev_velocity_y = y_velocity
+            # y_acceleration = (y_velocity-prev_velocity_y)/dt
+            # prev_velocity_y = y_velocity
 
-            pos_y,v,a = trap_integrate(dt,y_acceleration,y_velocity,pos_y,prev_a_y)
-            prev_a_y = y_acceleration
+            # pos_y,v,a = trap_integrate(dt,y_acceleration,y_velocity,pos_y,prev_a_y)
+            # prev_a_y = y_acceleration
             
             cv2.putText(image, f"Angle : {angle[0]*180/math.pi,angle[1]*180/math.pi}", (100,100), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255),2)
             cv2.putText(image, f"global coordinates: {global_coordinates}", (100,150), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255),2)
-            cv2.putText(image, f"X velocity: {x_velocity}", (100,200), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255),2)
-            cv2.putText(image, f"Y velocity: {y_velocity}", (100,250), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255),2)
-            cv2.putText(image, f"X acceleration: {x_acceleration}", (100,300), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255),2)
-            cv2.putText(image, f"Y acceleration: {y_acceleration}", (100,350), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255),2)
+            # cv2.putText(image, f"X velocity: {x_velocity}", (100,200), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255),2)
+            # cv2.putText(image, f"Y velocity: {y_velocity}", (100,250), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255),2)
+            # cv2.putText(image, f"X acceleration: {x_acceleration}", (100,300), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255),2)
+            # cv2.putText(image, f"Y acceleration: {y_acceleration}", (100,350), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255),2)
 
             # cv2.putText(image, f"P_out_x : {P_out_x}", (100,200), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255),2)
             # cv2.putText(image, f"x_acceleration : {x_acceleration}", (100,250), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255),2)
