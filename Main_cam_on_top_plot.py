@@ -22,8 +22,10 @@ pipeline.start(config)
 log_x = []
 log_distance = []
 log_time = []
+log_end_effector_x = []
+log_end_effector_y = []
 
-path = r"C:\Users\mateusz.jedynak\OneDrive - NTNU\Programmering\Python\Prosjekt\Bachelor\Source\Bachelor\Data\X-Y-PID_cam_top"
+path = r"C:\Users\mateusz.jedynak\OneDrive - NTNU\Programmering\Python\Prosjekt\Bachelor\Source\Bachelor\Data\angle_pos_PID_endeffect_angle_v2"
 
 def main():
     # Client has a few methods to get proxy to UA nodes that should always be in address space such as Root or Objects
@@ -121,6 +123,8 @@ def main():
                 except ValueError as info:
                     print(info)
 
+                log_end_effector_x.append(Init_pose[0])
+                log_end_effector_y.append(Init_pose[1])
                 #Update values
                 v_0_y,v_0_x = state.actual_TCP_speed[1],state.actual_TCP_speed[0]
                 v_2_y,v_2_x = v_0_y,v_0_x
@@ -141,7 +145,7 @@ def main():
             if keyboard.is_pressed("esc") or running:  # Break loop with ESC-key
                 info_csv_1 = [f"Posisjonering til lasten er 62,5 grade fra UR10, Y: -140 X: -55"]
                 info_csv_2 = [f"Kp_x:{Kp_x}, Kp_y:{Kp_y}, Kd_x:{Kd_x}, Kd_y:{Kd_y}, Ki_x: {Ki_x}, Ki_x: {Ki_y}, referance point {reference_point_x}, {reference_point_y}"]
-                header = ["Time","X","Y"]
+                header = ["Time","X","Y","End_effector_X","End_effector_Y"]
                 with open(path + '\X-Y-ulike_PID_{}.csv'.format(str(len(os.listdir(path)))), 'w',newline="") as f:
                     # create the csv writer
                     writer = csv.writer(f)
@@ -149,7 +153,7 @@ def main():
                     writer.writerow(info_csv_2)
                     writer.writerow(header)
                     for i in range(len(log_time)):
-                        writer.writerow([log_time[i],log_x[i],log_distance[i]])
+                        writer.writerow([log_time[i],log_x[i],log_distance[i],log_end_effector_x[i],log_end_effector_y[i]])
 
                 cv2.waitKey(0) == ord("q")
                 print("Ferdig")   

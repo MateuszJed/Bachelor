@@ -20,9 +20,13 @@ config = rs.config()
 config.enable_stream(rs.stream.color, 1280, 720, rs.format.bgr8, 30)
 pipeline.start(config)
 log_x = []
-log_distance = []
+log_y = []
+log_angle_x = []
+log_end_effector_x = []
+log_end_effector_y = []
+log_angle_y = []
 log_time = []
-path = r"C:\Users\mateusz.jedynak\OneDrive - NTNU\Programmering\Python\Prosjekt\Bachelor\Source\Bachelor\Data\X-Y-angle-PID-cam-top"
+path = r"C:\Users\mateusz.jedynak\OneDrive - NTNU\Programmering\Python\Prosjekt\Bachelor\Source\Bachelor\Data\angle_pos_PID_endeffect_angle_v2"
 
 #===============================End of functions=================================================================================
 def Angle(UR_10_x,UR_10_y,object_x,object_y,l):
@@ -40,8 +44,8 @@ def main():
     # Client has a few methods to get proxy to UA nodes that should always be in address space such as Root or Objects
     setp,con,watchdog,Init_pose = initial_communiation('169.254.182.10', 30004,500)
 
-    Kp_y, Kd_y, Ki_y = 0.8, 0.02,0.01
-    Kp_x, Kd_x, Ki_x = 0.8, 0.02,0.01
+    Kp_y, Kd_y, Ki_y = 0.5, 0.006,0.005
+    Kp_x, Kd_x, Ki_x = 0.5, 0.006,0.005
     v_0_x,v_2_x,v_0_y,v_2_y,t_0,t_1,t_f = 0,0,0,0,0,1.5,0.75
     prev_error_x, prev_error_y,reference_point_x,reference_point_y = 0,0,0,0
     eintegral_x,eintegral_y = 0,0
@@ -146,7 +150,11 @@ def main():
                 endtime = time.time()- start_time_log
                 log_time.append(endtime)
                 log_x.append(global_coordinates[0])
-                log_distance.append(global_coordinates[1])
+                log_y.append(global_coordinates[1])
+                log_angle_x.append(angle[0])
+                log_angle_y.append(angle[1])
+                log_end_effector_x.append(pos_x+0.0276)
+                log_end_effector_y.append(pos_y-0.8846)
                 #End regulation after x-sec
                 if endtime > 10:
                     running = True
@@ -158,7 +166,7 @@ def main():
             if keyboard.is_pressed("esc") or running:  # Break loop with ESC-key
                 info_csv_1 = [f"Posisjonering til lasten er 62,5 grade fra UR10, Y: -140 X: -55"]
                 info_csv_2 = [f"Kp_x:{Kp_x}, Kp_y:{Kp_y}, Kd_x:{Kd_x}, Kd_y:{Kd_y}, Ki_x: {Ki_x}, Ki_x: {Ki_y}, referance point {0.0276}, {-0.8846}"]
-                header = ["Time","X","Y"]
+                header = ["Time","X","Y","AngleX","AngleY","End_effector_X","End_effector_Y"]
                 with open(path + '\X-Y-ulike_PID_{}.csv'.format(str(len(os.listdir(path)))), 'w',newline="") as f:
                     # create the csv writer
                     writer = csv.writer(f)
@@ -166,7 +174,7 @@ def main():
                     writer.writerow(info_csv_2)
                     writer.writerow(header)
                     for i in range(len(log_time)):
-                        writer.writerow([log_time[i],log_x[i],log_distance[i]])
+                        writer.writerow([log_time[i],log_x[i],log_y[i],log_angle_x[i],log_angle_y[i],log_end_effector_x[i],log_end_effector_y[i]])
                 print("Ferdig")   
                 state = con.receive()
                 # ====================mode 3===================
