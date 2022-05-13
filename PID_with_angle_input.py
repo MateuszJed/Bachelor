@@ -39,7 +39,7 @@ def main():
     prev_velocity_x,prev_velocity_y = 0,0
 
     running = False
-    start_time = time.time()
+    start_time = time.perf_counter()
     watchdog.input_int_register_0 = 2
     con.send(watchdog)  # sending mode == 2
     state = con.receive()
@@ -62,8 +62,8 @@ def main():
         
 
         #Delta time 
-        dt = time.time() - start_time
-        start_time = time.time()
+        dt = time.perf_counter() - start_time
+        start_time = time.perf_counter()
         angle = Angle(forward_kinematic_rope[0],forward_kinematic_rope[1],global_coordinates[0],global_coordinates[1],distance)
         if reference_point_x != 0 or reference_point_y !=0:
             #PID x
@@ -109,7 +109,6 @@ def main():
         if keyboard.is_pressed("k") and pf:
             reference_point_x = global_coordinates[0]
             reference_point_y = global_coordinates[1]
-            start_time_log = time.time()
             pf = False
             print(f"Reference point its ready: {reference_point_x}, {reference_point_y}")          
         if show_cam:

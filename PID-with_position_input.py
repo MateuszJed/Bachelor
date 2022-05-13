@@ -1,3 +1,4 @@
+from tkinter.tix import Tree
 import cv2,math,time,keyboard
 import pyrealsense2 as rs
 import numpy as np
@@ -30,8 +31,8 @@ def main():
 
     detected = False
     running = False
-
-    start_time = time.time()
+    pf = True
+    start_time = time.perf_counter()
     watchdog.input_int_register_0 = 2
     con.send(watchdog)  # sending mode == 2
     state = con.receive()
@@ -49,8 +50,8 @@ def main():
 
         global_coordinates = Camera_top_to_qlobal_coords(coordinates_meters, forward_kinematic, angle_base)
         #Delta time 
-        dt = time.time() - start_time
-        start_time = time.time()
+        dt = time.perf_counter() - start_time
+        start_time = time.perf_counter()
         if reference_point_x != 0 or reference_point_y !=0:
 
             #PID x
@@ -108,12 +109,11 @@ def main():
             #Sending mode == 2 if no referece point
             con.send(watchdog)  # sending mode == 2
             state = con.receive()
-        if keyboard.is_pressed("k"):
+        if keyboard.is_pressed("k") and pf:
             reference_point_x = state.actual_TCP_pose[0]
             reference_point_y = state.actual_TCP_pose[1]
-
-            start_time_log = time.time()
-            print(f"Reference point its ready: {reference_point_x}, {reference_point_y}")        
+            print(f"Reference point its ready: {reference_point_x}, {reference_point_y}")
+            pf = False        
         if show_cam:
             cv2.imshow("Result", image)
             if cv2.waitKey(1):  # Break loop with ESC-key

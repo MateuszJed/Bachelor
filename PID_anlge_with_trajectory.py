@@ -161,7 +161,6 @@ def main():
             state = con.receive()
         if keyboard.is_pressed("k") and pf:
             regulation_start = True
-            start_time_log = time.time()
             pf = False
             print(f"Start Ragulate")          
         if show_cam:
