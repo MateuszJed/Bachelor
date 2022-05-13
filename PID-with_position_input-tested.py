@@ -1,4 +1,4 @@
-import cv2,math,time,keyboard,csv,os,csv
+import cv2,math,time,keyboard
 import pyrealsense2 as rs
 import numpy as np
 from Scripts.Kinematic import inverse_kinematic,forwad_kinematic
