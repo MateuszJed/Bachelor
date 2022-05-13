@@ -16,3 +16,10 @@ def list_to_setp(setp, list):
 
 def Angle(UR_10_x,UR_10_y,object_x,object_y,l):
     return cmath.asin((object_x-UR_10_x)/l).real,cmath.asin((object_y-UR_10_y)/l).real
+
+def PID(Kp,Kd,Ki,messurment, referance_point, prev_error,integral,delta_time,flip_error):
+    error = (messurment-referance_point)*flip_error
+    dedt = (error-prev_error)/delta_time    #Derivative
+    integral = integral + error*delta_time  #Integral
+
+    return Kp*error + Kd*dedt + Ki*integral,error,integral

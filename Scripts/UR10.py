@@ -39,12 +39,12 @@ def initial_communiation(Robot_IP,Robot_Port,FREQUENCY):
     # setp.input_double_register_4 = -3.14
     # setp.input_double_register_5 = 1.57
 
-    setp.input_double_register_0 = 1.588424152240039
-    setp.input_double_register_1 = -1.240405499392370
-    setp.input_double_register_2 = 1.191187214486130
-    setp.input_double_register_3 = -1.57
-    setp.input_double_register_4 = -3.14
-    setp.input_double_register_5 = 1.57
+    setp.input_double_register_0 = 1.588424152240039    #91.01°
+    setp.input_double_register_1 = -1.240405499392370   #-71.07°
+    setp.input_double_register_2 = 1.191187214486130    #68.25°
+    setp.input_double_register_3 = -1.57                #-90°
+    setp.input_double_register_4 = -3.14                #-180°
+    setp.input_double_register_5 = 1.57                 #90
 
     setp.input_bit_registers0_to_31 = 0
 
@@ -62,6 +62,6 @@ def initial_communiation(Robot_IP,Robot_Port,FREQUENCY):
             con.send(setp)
             time.sleep(0.01)
             break
-    return setp,con,watchdog,[0.0277,0.8845,0.7411]
+    return setp,con,watchdog,[0.0277,-0.8845,0.7411]
 # # initial_communiation('169.254.182.10', 30004)
 

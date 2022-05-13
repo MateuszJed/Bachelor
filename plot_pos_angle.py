@@ -30,7 +30,7 @@ def plot_graps(x,y,fig_num=1,title="",x_axis="x",y_axis="y",label="x",legend=Tru
     plt.grid(grid)
     plt.ylabel(y_axis)
     plt.xlabel(x_axis)
-    plt.title(title)
+    # plt.title(title)
     if legend:
         plt.legend(loc=loc)
 
@@ -66,21 +66,21 @@ format = format_y
 
 for n, file in enumerate(files):
     t, x, y,anglex,angle= read_csv_data_to_list(file)
-    plot_graps(t, x, 1,"Module PID-controller in x-direction ", "Time[s]", "Global coordinates of payload [m]", f"Trail: {n+1}")
+    plot_graps(t, x, "x","Module PID-controller in x-direction ", "Time[s]", "Payload position [meter]", f"Trail: {n+1}")
 # x = np.ones(11)*0.043303780712741435
 # plt.plot(x, color = 'blue', linewidth=1, linestyle='-.')
 for n, file in enumerate(files):
     t, x, y,anglex,angle =read_csv_data_to_list(file)
-    plot_graps(t, y, 2,"Module PID-controller in y-direction ", "Time[s]", "Global coordinates of payload [m]", f"Trail: {n+1}")
+    plot_graps(t, y, "y","Module PID-controller in y-direction ", "Time[s]", "Payload position [meter]", f"Trail: {n+1}")
 # x = np.ones(11)*-0.7977911479915556
 # plt.plot(x, color = 'blue', linewidth=1, linestyle='-.')
 for n, file in enumerate(files):
     t, x, y,anglex,angle = read_csv_data_to_list(file)
-    plot_graps(t, anglex, 3,"Module PID-controller in x-direction ", "Time[s]", "Angle between end effctor and payload [Radian]", f"Trail: {n+1}")
+    plot_graps(t, anglex, "anglex","Module PID-controller in x-direction ", "Time[s]", "Angle between end effctor and payload [Radian]", f"Trail: {n+1}")
 
 for n, file in enumerate(files):
     t, x, y,anglex,angleY = read_csv_data_to_list(file)
-    plot_graps(t, angleY, 4,"Module PID-controller in y-direction ", "Time[s]", "Angle between end effctor and payload [Radian]", f"Trail: {n+1}")
+    plot_graps(t, angleY, "angley","Module PID-controller in y-direction ", "Time[s]", "Angle between end effctor and payload [Radian]", f"Trail: {n+1}")
 
 # for n, file in enumerate(files):
 #     t, x, y,anglex,angle = read_csv_data_to_list(file)
