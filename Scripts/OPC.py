@@ -15,7 +15,8 @@ async def main():
     # setup our server
     server = Server()
     await server.init()
-    server.set_endpoint('opc.tcp://169.254.182.5:8000')
+    server.set_endpoint('opc.tcp://169.254.182.11:8000')
+    server.set_endpoint('opc.tcp://localhost:4840')
     # server.set_endpoint('opc.tcp://169.254.182.5:8000')
 
 

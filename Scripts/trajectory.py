@@ -25,7 +25,7 @@ def asym_trajectory(t,list_to_unpac):#,q_0,q_1,v_0,v_1,h,T,t_0,t_1,t_f,t_a,t_d):
         dq = (2 * h - v_0 * t_a - v_1 * t_d) / (T) + 2 * (- (2 * h - v_0 * t_a - v_1 * (T + t_d)) / (2 * T * t_d)) * (t - t_f)
         ddq = 2*(- (2 * h - v_0 * t_a - v_1 * (T + t_d)) / (2 * T * t_d))
 
-    return q, dq, ddq
+    return q
 
 # log_q= []
 # log_dq= []

@@ -1,7 +1,7 @@
 import cv2,math,time,keyboard,csv
 import pyrealsense2 as rs
 import numpy as np
-from Scripts.Kinematic import inverse_kinematic
+from Scripts.Kinematic import inverse_kinematic,forwad_kinematic
 from Scripts.Camera import ObjectDetection,Inital_color
 from Scripts.miscellaneous import _map,setp_to_list,list_to_setp
 from Scripts.UR10 import initial_communiation
@@ -11,8 +11,6 @@ lower_color, upper_color = Inital_color("yellowbox")
 flip_cam = False
 detected = False
 show_cam = True
-
-path = r"C:\Users\mateusz.jedynak\OneDrive - NTNU\Programmering\Python\Prosjekt\Bachelor\Source\Bachelor\Data\X-Y-ulike_PID"
 
 #Config IntelRealsens
 pipeline = rs.pipeline()
@@ -27,10 +25,6 @@ align = rs.align(align_to)
 frames = pipeline.wait_for_frames()
 color_frame = frames.get_color_frame()
 image = np.asanyarray(color_frame.get_data())
-
-log_x = []
-log_distance = []
-log_time = []
 
 def main():
     # Client has a few methods to get proxy to UA nodes that should always be in address space such as Root or Objects
