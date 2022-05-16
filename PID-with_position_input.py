@@ -16,8 +16,8 @@ lower_color, upper_color = Inital_color("yellowbox")
 
 pipeline = rs.pipeline()
 config = rs.config()
-config.enable_stream(rs.stream.color, 848,480, rs.format.bgr8, 60)
-# config.enable_stream(rs.stream.color, 1280, 720, rs.format.bgr8, 30)
+# config.enable_stream(rs.stream.color, 848,480, rs.format.bgr8, 60)
+config.enable_stream(rs.stream.color, 1280, 720, rs.format.bgr8, 30)
 pipeline.start(config)
 
 def main():
@@ -54,16 +54,21 @@ def main():
         dt = time.perf_counter() - start_time
         start_time = time.perf_counter()
         if reference_point_x != 0 or reference_point_y !=0:
-
-            #PID x
-            P_out_x,error_x,eintegral_x = PID(Kp_x,Kd_x,Ki_x,reference_point_x,global_coordinates[0],prev_error_x,eintegral_x,dt,-1)
+            #PID X
+            error_x = (reference_point_x-global_coordinates[0])*-1
+            dedt = (error_x-prev_error_x)/dt #Derivative
             prev_error_x = error_x
+            eintegral_x = eintegral_x + error_x*dt #Integralk
 
-            #PID y
-            P_out_y,error_y,eintegral_y = PID(Kp_y,Kd_y,Ki_y,reference_point_y,global_coordinates[1],prev_error_y,eintegral_y,dt,-1)
+            P_out_x = Kp_x*error_x + Kd_x*dedt + Ki_x*eintegral_x + reference_point_x
+            #PID Y
+            error_y = (reference_point_y-global_coordinates[1])*-1
+            dedt = (error_y-prev_error_y)/dt #Derivative
             prev_error_y = error_y
+            eintegral_y = eintegral_y + error_y*dt #Integral
 
-            # Trajectory 
+            P_out_y = Kp_y*error_y + Kd_y*dedt + Ki_y*eintegral_y + reference_point_y
+
             parameters_to_trajectory_y = inital_parameters_traj(Init_pose[1],P_out_y,v_0_y,v_2_y,     0,      0.1,    0.05)
             parameters_to_trajectory_x = inital_parameters_traj(Init_pose[0],P_out_x,v_0_x,v_2_x,     0,      1.5,    0.75)
 

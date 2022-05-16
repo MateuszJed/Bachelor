@@ -16,8 +16,8 @@ lower_color, upper_color = Inital_color("yellowbox")
 
 pipeline = rs.pipeline()
 config = rs.config()
-# config.enable_stream(rs.stream.color, 1280, 720, rs.format.bgr8, 30)
-config.enable_stream(rs.stream.color, 848,480, rs.format.bgr8, 60)
+config.enable_stream(rs.stream.color, 1280, 720, rs.format.bgr8, 30)
+# config.enable_stream(rs.stream.color, 848,480, rs.format.bgr8, 60)
 pipeline.start(config)
 def main():
     # Client has a few methods to get proxy to UA nodes that should always be in address space such as Root or Objects
@@ -114,11 +114,11 @@ def main():
                 parameters_to_trajectory_x = inital_parameters_traj(start_pose[0],REFERENCE_POINT_X,0,0,     0,      traj_time,    traj_time/2)
                 parameters_to_trajectory_y = inital_parameters_traj(start_pose[1],REFERENCE_POINT_Y,0,0,     0,      traj_time,    traj_time/2)
                 # Trajectory for y
-                q_y, dq_y, ddq_y = asym_trajectory(t,parameters_to_trajectory_y)
+                q_y = asym_trajectory(t,parameters_to_trajectory_y)
                 Init_pose[1] = q_y
 
                 #Trajectory for x
-                q_x, dq_x, ddq_x = asym_trajectory(t,parameters_to_trajectory_x)
+                q_x = asym_trajectory(t,parameters_to_trajectory_x)
                 Init_pose[0] = q_x
 
             state = con.receive()

@@ -1,0 +1,3 @@
+Kinematic test
+"x: 0.5*math.sin(count), y: -0.7+0.5*math.sin(count)"
+Time,X,Y

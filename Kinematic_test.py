@@ -1,6 +1,7 @@
 import math,time,keyboard,os,csv
-from Kinematic import inverse_kinematic,forwad_kinematic
-from UR10 import initial_communiation
+from Scripts.Kinematic import inverse_kinematic,forwad_kinematic
+from Scripts.UR10 import initial_communiation
+from Scripts.miscellaneous import list_to_setp
 
 def main():
     # Client has a few methods to get proxy to UA nodes that should always be in address space such as Root or Objects
@@ -14,13 +15,13 @@ def main():
     state = con.receive()
     log_x,log_y,log_t = [], [], []
     # Init_pose = 0.2397127693021015 -0.46028723069789845
+    Init_pose[0], Init_pose[1], Init_pose[2] = 0.348, -0.657,0.605
     while state.runtime_state > 1:
         #Inverse Kinematic
         if run:
             try: 
-                q1, q2, q3 = inverse_kinematic(Init_pose[0], Init_pose[1], Init_pose[2])
-                q6 = q2 +q3 +math.pi/2
-                send_to_ur = [q1,q2,q3,-1.570796327,-3.141592654,q6]
+                q1, q2, q3 = forwad_kinematic_v2(Init_pose[0], Init_pose[1], Init_pose[2])
+                send_to_ur = [q1,q2,q3,-1.570796327,-3.141592654,1.57]
                 list_to_setp(setp, send_to_ur)
                 con.send(setp)  # sending new8 pose
             except ValueError as info:
@@ -45,7 +46,7 @@ def main():
                 writer.writerow(info_csv_1)
                 writer.writerow(info_csv_2)
                 writer.writerow(header)
-                for i in range(len(log_time)):
+                for i in range(len(log_t)):
                     writer.writerow([log_t,log_x,log_y])
             state = con.receive()
             # ====================mode 3===========k========
@@ -54,6 +55,7 @@ def main():
             break
         if keyboard.is_pressed("k") and pf:
             run = True
+            print("Start")
             start_timer = time.time()
             pf = False
             

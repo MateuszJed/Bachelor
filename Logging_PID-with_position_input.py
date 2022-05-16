@@ -38,7 +38,7 @@ def main():
     detected = False
     running = False
 
-    start_time = time.time()
+    start_time = time.perf_counter()
     watchdog.input_int_register_0 = 2
     con.send(watchdog)  # sending mode == 2
     state = con.receive()
@@ -56,8 +56,8 @@ def main():
 
         global_coordinates = Camera_top_to_qlobal_coords(coordinates_meters, forward_kinematic, angle_base)
         #Delta time 
-        dt = time.time() - start_time
-        start_time = time.time()
+        dt = time.perf_counter() - start_time
+        start_time = time.perf_counter()
         if global_coordinates[0] > 0.1 and reference_point_x == 0:
             print("Start Regulation")
             start_time_log = time.time()
@@ -66,14 +66,20 @@ def main():
             con.send(watchdog)  # sending mode == 2
             state = con.receive()
         if reference_point_x != 0 or reference_point_y !=0:
-
-            #PID x
-            P_out_x,error_x,eintegral_x = PID(Kp_x,Kd_x,Ki_x,reference_point_x,global_coordinates[0],prev_error_x,eintegral_x,dt,-1)
+            #PID X
+            error_x = (reference_point_x-global_coordinates[0])*-1
+            dedt = (error_x-prev_error_x)/dt #Derivative
             prev_error_x = error_x
+            eintegral_x = eintegral_x + error_x*dt #Integralk
 
-            #PID y
-            P_out_y,error_y,eintegral_y = PID(Kp_y,Kd_y,Ki_y,reference_point_y,global_coordinates[1],prev_error_y,eintegral_y,dt,-1)
+            P_out_x = Kp_x*error_x + Kd_x*dedt + Ki_x*eintegral_x + reference_point_x
+            #PID Y
+            error_y = (reference_point_y-global_coordinates[1])*-1
+            dedt = (error_y-prev_error_y)/dt #Derivative
             prev_error_y = error_y
+            eintegral_y = eintegral_y + error_y*dt #Integral
+
+            P_out_y = Kp_y*error_y + Kd_y*dedt + Ki_y*eintegral_y + reference_point_y
 
             # Trajectory 
             parameters_to_trajectory_y = inital_parameters_traj(Init_pose[1],P_out_y,v_0_y,v_2_y,     0,      0.1,    0.05)
