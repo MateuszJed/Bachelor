@@ -1,4 +1,4 @@
-import math,time,keyboard
+import math,time,keyboard,os,csv
 from Kinematic import inverse_kinematic,forwad_kinematic
 from UR10 import initial_communiation
 
