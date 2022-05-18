@@ -1,0 +1,31 @@
+ Program
+   BeforeStart
+     joints≔[1.5884,-1.2404,1.1911,-1.57,-3.14,1.57]
+     MoveJ
+       Waypoint_1
+     write_output_boolean_register(0, False )
+     Wait: 0.01
+     mode≔0
+     popup("Registers reset, run PC code and then click Continue",title="Hi Viktor",blocking= True )
+   Robot Program
+     write_output_boolean_register(0, True )
+     sync()
+     Loop mode<3
+       Loop mode≟2
+         servoj(joints, 0, 0, 0.002, 0.2, 2000)
+         mode≔read_input_integer_register(0)
+       Loop mode ≟4
+         mode≔read_input_integer_register(0)
+       Loop mode≟3
+         MoveJ
+           Waypoint_1
+           Halt
+     sync()
+   Thread_1
+     tmp≔p[1.57,-1.57,1.57,-1.57,-3.14,1.57]
+     Loop
+       Script: pose_register.script
+       joints≔[tmp[0],tmp[1],tmp[2],tmp[3],tmp[4],tmp[5]]
+       sync()
+       mode≔read_input_integer_register(0)
+       sync()

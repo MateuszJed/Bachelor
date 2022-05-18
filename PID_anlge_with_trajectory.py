@@ -21,7 +21,7 @@ config.enable_stream(rs.stream.color, 1280, 720, rs.format.bgr8, 30)
 pipeline.start(config)
 def main():
     # Client has a few methods to get proxy to UA nodes that should always be in address space such as Root or Objects
-    setp,con,watchdog,Init_pose = initial_communiation('169.254.182.10', 30004,500)
+    setp,con,watchdog,Init_pose = initial_communiation('169.254.182.10', 30004,500,"pid")
 
     Kp_y, Kd_y, Ki_y = 0.5, 0.01,0.006
     Kp_x, Kd_x, Ki_x = 0.5, 0.01,0.006

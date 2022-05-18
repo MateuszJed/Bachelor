@@ -1,0 +1,340 @@
+#VRML_SIM R2019a utf8
+
+PROTO UR10 [
+ field SFVec3f    translation 0 0 0
+ field SFRotation rotation    0 1 0 0
+ field SFVec3f    scale       1 1 1
+ # children
+ field SFString   name                "ur10"      # any string
+ field SFString   model               ""          # any string
+ field SFString   description         ""          # any string
+ field SFString   contactMaterial     "default"   # any string
+ # field MFNode     immersionProperties [ ]         # {ImmersionProperties, PROTO}
+ # boundingObject NULL
+ # physics NULL
+ field SFBool     locked              FALSE       # {TRUE, FALSE}
+ # field SFFloat    radarCrossSection   0.0         # [0, 1]
+ # field MFColor    recognitionColors   [ ]         # any color
+ field SFFloat    translationStep     0.01        # [0, inf)
+ field SFFloat    rotationStep        0.261799387 # [0, inf)
+
+ field SFString shoulderPanMotorName  "shoulder_pan_joint"
+ field SFString shoulderLiftMotorName "shoulder_lift_joint"
+ field SFString elbowMotorName        "elbow_joint"
+ field SFString wrist1MotorName       "wrist_1_joint"
+ field SFString wrist2MotorName       "wrist_2_joint"
+ field SFString wrist3MotorName       "wrist_3_joint"
+
+ field SFFloat shoulderPanLowerLimit  -3.14159265359 # [-pi, pi]
+ field SFFloat shoulderPanUpperLimit   3.14159265359 # [-pi, pi]
+ field SFFloat shoulderLiftLowerLimit -3.14159265359 # [-pi, pi]
+ field SFFloat shoulderLiftUpperLimit  3.14159265359 # [-pi, pi]
+ field SFFloat elbowLowerLimit        -3.14159265359 # [-pi, pi]
+ field SFFloat elbowUpperLimit         3.14159265359 # [-pi, pi]
+ field SFFloat wrist1LowerLimit       -3.14159265359 # [-pi, pi]
+ field SFFloat wrist1UpperLimit        3.14159265359 # [-pi, pi]
+ field SFFloat wrist2LowerLimit       -3.14159265359 # [-pi, pi]
+ field SFFloat wrist2UpperLimit        3.14159265359 # [-pi, pi]
+ field SFFloat wrist3LowerLimit       -3.14159265359 # [-pi, pi]
+ field SFFloat wrist3UpperLimit        3.14159265359 # [-pi, pi]
+
+ field MFNode gripperSlot [ ]
+]
+{
+   %{
+      local base_mass      = 4
+      local shoulder_mass  = 7.778
+      local upper_arm_mass = 12.93
+      local forearm_mass   = 3.87
+      local wrist_1_mass   = 1.96
+      local wrist_2_mass   = 1.96
+      local wrist_3_mass   = 0.202
+
+      local d1 = 0.1273
+      local a2 = -0.612
+      local a3 = -0.5723
+      local d4 = 0.163941
+      local d5 = 0.1157
+      local d6 = 0.0922
+
+      local shoulder_offset = 0.220941
+      local elbow_offset    = -0.1719
+
+      local shoulder_height  = d1
+      local upper_arm_length = -a2
+      local forearm_length   = -a3
+      local wrist_1_length   = d4 - elbow_offset - shoulder_offset
+      local wrist_2_length   = d5
+      local wrist_3_length   = d6
+
+      local function ixx(m, r, l) return 1/12 * m * (3 * r^2 + l^2) end
+      local function iyy(m, r, l) return 1/12 * m * (3 * r^2 + l^2) end
+      local function izz(m, r, l) return 1/12 * m * r^2             end
+      local function ixy(m, r, l) return 0                      end
+      local function ixz(m, r, l) return 0                      end
+      local function iyz(m, r, l) return 0                      end
+   }%
+   Solid {
+      translation IS translation
+      rotation    IS rotation
+      scale       IS scale
+      children [
+         UR10BaseShape { }
+         Transform {
+            translation 0 %{=shoulder_height}% 0
+            children [
+               HingeJoint {
+                  jointParameters HingeJointParameters {
+                     axis 0 1 0
+                  }
+                  device [
+                   RotationalMotor {
+                      name        IS shoulderPanMotorName
+                      maxVelocity 2.16
+                      minPosition IS shoulderPanLowerLimit
+                      maxPosition IS shoulderPanUpperLimit
+                      maxTorque   330.0
+                   }
+                  ]
+                  endPoint Solid {
+                     children [
+                        UR10ShoulderShape { }
+                        Transform {
+                           translation 0 0 %{=shoulder_offset}%
+                           children [
+                              HingeJoint {
+                                 jointParameters HingeJointParameters {
+                                    axis 0 0 1
+                                 }
+                                 device [
+                                  RotationalMotor {
+                                     name        IS shoulderLiftMotorName
+                                     maxVelocity 2.16
+                                     minPosition IS shoulderLiftLowerLimit
+                                     maxPosition IS shoulderLiftUpperLimit
+                                     maxTorque   330.0
+                                  }
+                                 ]
+                                 endPoint Solid {
+                                    children [
+                                       UR10UpperArmShape { }
+                                       Transform {
+                                          translation 0 %{=upper_arm_length}% %{=elbow_offset}%
+                                          children [
+                                             HingeJoint {
+                                                jointParameters HingeJointParameters {
+                                                   axis 0 0 1
+                                                }
+                                                device [
+                                                 RotationalMotor {
+                                                    name        IS elbowMotorName
+                                                    maxVelocity 3.15
+                                                    minPosition IS elbowLowerLimit
+                                                    maxPosition IS elbowUpperLimit
+                                                    maxTorque   150.0
+                                                 }
+                                                ]
+                                                endPoint Solid {
+                                                   children [
+                                                      UR10ForeArmShape { }
+                                                      Transform {
+                                                         translation 0 %{=forearm_length}% 0
+                                                         children [
+                                                            HingeJoint {
+                                                               jointParameters HingeJointParameters {
+                                                                  axis 0 0 1
+                                                               }
+                                                               device [
+                                                                RotationalMotor {
+                                                                   name        IS wrist1MotorName
+                                                                   maxVelocity 3.2
+                                                                   minPosition IS wrist1LowerLimit
+                                                                   maxPosition IS wrist1UpperLimit
+                                                                   maxTorque   54.0
+                                                                }
+                                                               ]
+                                                               endPoint Solid {
+                                                                  children [
+                                                                     UR10Wrist1Shape { }
+                                                                     Transform {
+                                                                        translation 0 0 %{=wrist_1_length}%
+                                                                        children [
+                                                                           HingeJoint {
+                                                                              jointParameters HingeJointParameters {
+                                                                                 axis 0 1 0
+                                                                              }
+                                                                              device [
+                                                                               RotationalMotor {
+                                                                                  name        IS wrist2MotorName
+                                                                                  maxVelocity 3.2
+                                                                                  minPosition IS wrist2LowerLimit
+                                                                                  maxPosition IS wrist2UpperLimit
+                                                                                  maxTorque   54.0
+                                                                               }
+                                                                              ]
+                                                                              endPoint Solid {
+                                                                                 children [
+                                                                                    UR10Wrist2Shape { }
+                                                                                    Transform {
+                                                                                       translation 0 %{=wrist_2_length}% 0
+                                                                                       children [
+                                                                                          HingeJoint {
+                                                                                             jointParameters HingeJointParameters {
+                                                                                                axis 0 0 1
+                                                                                             }
+                                                                                             device [
+                                                                                              RotationalMotor {
+                                                                                                 name        IS wrist3MotorName
+                                                                                                 maxVelocity 3.2
+                                                                                                 minPosition IS wrist3LowerLimit
+                                                                                                 maxPosition IS wrist3UpperLimit
+                                                                                                 maxTorque   54.0
+                                                                                              }
+                                                                                             ]
+                                                                                             endPoint Solid {
+                                                                                                children [
+                                                                                                   UR10Wrist3Shape { }
+                                                                                                   Transform {
+                                                                                                      translation 0 0 %{=wrist_3_length}%
+                                                                                                      children IS gripperSlot
+                                                                                                   }
+                                                                                                ]
+                                                                                                name "ur10_wrist_3"
+                                                                                                boundingObject UR10Wrist3Collision { }
+                                                                                                physics Physics {
+                                                                                                   %{ local m, r, l = wrist_3_mass, 0.075, 0.12 }%
+                                                                                                   density -1
+                                                                                                   mass %{=m}%
+                                                                                                   centerOfMass [
+                                                                                                    0 0 0
+                                                                                                   ]
+                                                                                                   inertiaMatrix [
+                                                                                                    %{=ixx(m, r, l)}% %{=iyy(m, r, l)}% %{=izz(m, r, l)}%
+                                                                                                    %{=ixy(m, r, l)}% %{=ixz(m, r, l)}% %{=iyz(m, r, l)}%
+                                                                                                   ]
+                                                                                                }
+                                                                                             }
+                                                                                          }
+                                                                                       ]
+                                                                                    }
+                                                                                 ]
+                                                                                 name "ur10_wrist_2"
+                                                                                 boundingObject UR10Wrist2Collision { }
+                                                                                 physics Physics {
+                                                                                    %{ local m, r, l = wrist_2_mass, 0.075, 0.12 }%
+                                                                                    density -1
+                                                                                    mass %{=m}%
+                                                                                    centerOfMass [
+                                                                                     0 0 0
+                                                                                    ]
+                                                                                    inertiaMatrix [
+                                                                                     %{=ixx(m, r, l)}% %{=iyy(m, r, l)}% %{=izz(m, r, l)}%
+                                                                                     %{=ixy(m, r, l)}% %{=ixz(m, r, l)}% %{=iyz(m, r, l)}%
+                                                                                    ]
+                                                                                 }
+                                                                              }
+                                                                           }
+                                                                        ]
+                                                                     }
+                                                                  ]
+                                                                  name "ur10_wrist_1"
+                                                                  boundingObject UR10Wrist1Collision { }
+                                                                  physics Physics {
+                                                                     %{ local m, r, l = wrist_1_mass, 0.075, 0.12 }%
+                                                                     density -1
+                                                                     mass %{=m}%
+                                                                     centerOfMass [
+                                                                      0 0 0
+                                                                     ]
+                                                                     inertiaMatrix [
+                                                                      %{=ixx(m, r, l)}% %{=iyy(m, r, l)}% %{=izz(m, r, l)}%
+                                                                      %{=ixy(m, r, l)}% %{=ixz(m, r, l)}% %{=iyz(m, r, l)}%
+                                                                     ]
+                                                                  }
+                                                               }
+                                                            }
+                                                         ]
+                                                      }
+                                                   ]
+                                                   name "ur10_forearm"
+                                                   boundingObject UR10ForeArmCollision { }
+                                                   physics Physics {
+                                                      %{ local m, r, l = forearm_mass, 0.075, -a3 }%
+                                                      density -1
+                                                      mass %{=m}%
+                                                      centerOfMass [
+                                                       0 %{=-a3/2}% 0
+                                                      ]
+                                                      inertiaMatrix [
+                                                       %{=ixx(m, r, l)}% %{=iyy(m, r, l)}% %{=izz(m, r, l)}%
+                                                       %{=ixy(m, r, l)}% %{=ixz(m, r, l)}% %{=iyz(m, r, l)}%
+                                                      ]
+                                                   }
+                                                }
+                                             }
+                                          ]
+                                       }
+                                    ]
+                                    name "ur10_upper_arm"
+                                    boundingObject UR10UpperArmCollision { }
+                                    physics Physics {
+                                       %{ local m, r, l = upper_arm_mass, 0.075, -a2 }%
+                                       density -1
+                                       mass %{=m}%
+                                       centerOfMass [
+                                        0 %{=-a2/2}% 0
+                                       ]
+                                       inertiaMatrix [
+                                        %{=ixx(m, r, l)}% %{=iyy(m, r, l)}% %{=izz(m, r, l)}%
+                                        %{=ixy(m, r, l)}% %{=ixz(m, r, l)}% %{=iyz(m, r, l)}%
+                                       ]
+                                    }
+                                 }
+                              }
+                           ]
+                        }
+                     ]
+                     name "ur10_shoulder"
+                     boundingObject UR10ShoulderCollision { }
+                     physics Physics {
+                        %{ local m, r, l = shoulder_mass, 0.075, 0.178 }%
+                        density -1
+                        mass %{=m}%
+                        centerOfMass [
+                         0 0 0
+                        ]
+                        inertiaMatrix [
+                         %{=ixx(m, r, l)}% %{=iyy(m, r, l)}% %{=izz(m, r, l)}%
+                         %{=ixy(m, r, l)}% %{=ixz(m, r, l)}% %{=iyz(m, r, l)}%
+                        ]
+                     }
+                  }
+               }
+            ]
+         }
+      ]
+      name                IS name
+      model               IS model
+      description         IS description
+      contactMaterial     IS contactMaterial
+      # immersionProperties IS immersionProperties
+      boundingObject UR10BaseCollision { }
+      physics Physics {
+         %{ local m, r, l = base_mass, 0.075, 0.038 }%
+         density -1
+         mass %{=m}%
+         centerOfMass [
+          0 0 0
+         ]
+         inertiaMatrix [
+          %{=ixx(m, r, l)}% %{=iyy(m, r, l)}% %{=izz(m, r, l)}%
+          %{=ixy(m, r, l)}% %{=ixz(m, r, l)}% %{=iyz(m, r, l)}%
+         ]
+      }
+      locked            IS locked
+      # radarCrossSection IS radarCrossSection
+      # recognitionColors IS recognitionColors
+      translationStep   IS translationStep
+      rotationStep      IS rotationStep
+   }
+}

@@ -1,5 +1,5 @@
 from tkinter.tix import Tree
-import cv2,math,time,keyboard
+import cv2,math,time,keyboard,pyautogui
 import pyrealsense2 as rs
 import numpy as np
 from Scripts.Kinematic import inverse_kinematic,forwad_kinematic
@@ -22,7 +22,8 @@ pipeline.start(config)
 
 def main():
     # Client has a few methods to get proxy to UA nodes that should always be in address space such as Root or Objects
-    setp,con,watchdog,Init_pose = initial_communiation('169.254.182.10', 30004,500)
+    setp,con,watchdog,Init_pose = initial_communiation('169.254.182.10', 30004,500,"pid")
+    pyautogui.hotkey('ctrl', 'r')  # ctrl-c to copy
     Kp_y, Kd_y, Ki_y = 0.5, 0.006,0.006
     Kp_x, Kd_x, Ki_x = 0.5, 0.005,0.006
     v_0_x,v_2_x,v_0_y,v_2_y,t_0,t_1,t_f = 0,0,0,0,0,1.5,0.75
@@ -86,8 +87,7 @@ def main():
                 #Inverse Kinematic
                 try: 
                     q1, q2, q3 = inverse_kinematic(Init_pose[0], Init_pose[1], Init_pose[2])
-                    q6 = q2 +q3 +math.pi/2
-                    send_to_ur = [q1,q2,q3,-1.570796327,-3.141592654,q6]
+                    send_to_ur = [q1,q2,q3,-1.570796327,-3.141592654,1.57]
                     list_to_setp(setp, send_to_ur)
                     con.send(setp)  # sending new8 pose
                 except ValueError as info:
@@ -109,6 +109,7 @@ def main():
                 con.send(watchdog)
                 con.send_pause()
                 con.disconnect()
+                pyautogui.hotkey('ctrl', 't')  # ctrl-c to copy
                 pipeline.stop()
                 break
         else:

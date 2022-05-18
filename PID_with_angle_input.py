@@ -22,7 +22,7 @@ pipeline.start(config)
 
 def main():
     # Client has a few methods to get proxy to UA nodes that should always be in address space such as Root or Objects
-    setp,con,watchdog,Init_pose = initial_communiation('169.254.182.10', 30004,500)
+    setp,con,watchdog,Init_pose = initial_communiation('169.254.182.10', 30004,500,"pid")
 
     REFERENCE_POINT_X = 0
     REFERENCE_POINT_Y = -0.885

@@ -1,7 +1,7 @@
 # Importing Image class from PIL module
 from PIL import Image
 import glob
-path = r"C:\Users\mateusz.jedynak\OneDrive - NTNU\Bachelor\Bachelor\Bilder\New result\Module-y-v2.png"
+path = r"C:\Users\mateusz.jedynak\OneDrive - NTNU\Bachelor\Bachelor\Bilder\damp-y.png"
 # Opens a image in RGB mode
 # for path in glob.iglob(pathh, recursive=True):
     

@@ -1,0 +1,12 @@
+#VRML_SIM R2019a utf8
+# tags: hidden
+
+PROTO UR10LightSkyAppearance [
+]
+{
+   PBRAppearance {
+      baseColor 0.49 0.68 0.80
+      roughness 0.5
+      metalness 0.5
+   }
+}

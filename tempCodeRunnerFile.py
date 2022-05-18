@@ -1,0 +1,1 @@
+\Kinematic\kine.csv', index=False,) 

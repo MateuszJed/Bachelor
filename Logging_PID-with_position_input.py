@@ -1,4 +1,4 @@
-import cv2,math,time,keyboard,os,csv
+import cv2,math,time,keyboard,os,csv,pyautogui
 import pyrealsense2 as rs
 import numpy as np
 from Scripts.Kinematic import inverse_kinematic,forwad_kinematic
@@ -9,7 +9,7 @@ from Scripts.trajectory import asym_trajectory,inital_parameters_traj
 
 show_cam = True
 flip_cam = False
-path = r"C:\Users\mateusz.jedynak\OneDrive - NTNU\Programmering\Python\Prosjekt\Bachelor\Source\Bachelor\Data\testing"
+path = r"C:\Users\mateusz.jedynak\OneDrive - NTNU\Programmering\Python\Prosjekt\Bachelor\Source\Bachelor\Data\to_video"
 
 #Config IntelRealsens
 lower_color, upper_color = Inital_color("yellowbox")
@@ -27,7 +27,7 @@ log_time = []
 
 def main():
     # Client has a few methods to get proxy to UA nodes that should always be in address space such as Root or Objects
-    setp,con,watchdog,Init_pose = initial_communiation('169.254.182.10', 30004,500)
+    setp,con,watchdog,Init_pose = initial_communiation('169.254.182.10', 30004,500,"pid")
     Kp_y, Kd_y, Ki_y = 0.5, 0.006,0.006
     Kp_x, Kd_x, Ki_x = 0.5, 0.005,0.006
     v_0_x,v_2_x,v_0_y,v_2_y,t_0,t_1,t_f = 0,0,0,0,0,1.5,0.75
@@ -42,7 +42,8 @@ def main():
     watchdog.input_int_register_0 = 2
     con.send(watchdog)  # sending mode == 2
     state = con.receive()
-
+    pyautogui.hotkey('ctrl', 'r')  # ctrl-c to copy
+    
     while state.runtime_state > 1:
         frames = pipeline.wait_for_frames()
         color_frame = frames.get_color_frame()
@@ -59,6 +60,8 @@ def main():
         dt = time.perf_counter() - start_time
         start_time = time.perf_counter()
         if global_coordinates[0] > 0.1 and reference_point_x == 0:
+            # pyautogui.hotkey('ctrl', 'r')  # ctrl-c to copy
+
             print("Start Regulation")
             start_time_log = time.time()
             reference_point_x,reference_point_y = 0.10, -0.7977911479915556

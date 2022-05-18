@@ -1,4 +1,4 @@
-import cv2,math,time,keyboard,csv,cmath,os
+import cv2,math,time,keyboard,csv,cmath,os,pyautogui
 import pyrealsense2 as rs
 import numpy as np
 from Scripts.Kinematic import inverse_kinematic,forwad_kinematic,forwad_kinematic_v2
@@ -16,7 +16,8 @@ lower_color, upper_color = Inital_color("yellowbox")
 
 pipeline = rs.pipeline()
 config = rs.config()
-config.enable_stream(rs.stream.color, 848,480, rs.format.bgr8, 60)
+config.enable_stream(rs.stream.color, 1280, 720, rs.format.bgr8, 30)
+# config.enable_stream(rs.stream.color, 848,480, rs.format.bgr8, 60)
 pipeline.start(config)
 
 log_x = []
@@ -29,7 +30,8 @@ log_time = []
 path = r"C:\Users\mateusz.jedynak\OneDrive - NTNU\Programmering\Python\Prosjekt\Bachelor\Source\Bachelor\Data\testing"
 def main():
     # Client has a few methods to get proxy to UA nodes that should always be in address space such as Root or Objects
-    setp,con,watchdog,Init_pose = initial_communiation('169.254.182.10', 30004,500)
+    setp,con,watchdog,Init_pose = initial_communiation('169.254.182.10', 30004,500,"pid")
+    pyautogui.hotkey('ctrl', 'r')  # ctrl-c to copy
 
     Kp_y, Kd_y, Ki_y = 0.5, 0.01,0.006
     Kp_x, Kd_x, Ki_x = 0.5, 0.01,0.006
@@ -81,8 +83,8 @@ def main():
         dt = time.perf_counter() - start_time
         start_time = time.perf_counter()
         angle = Angle(forward_kinematic_rope[0],forward_kinematic_rope[1],global_coordinates[0],global_coordinates[1],distance)
-        cv2.putText(image, f"Angle in x-direction: {angle[0]}", (100,100), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255),2)
-        cv2.putText(image, f"Angle in y-direction: {angle[1]}", (100,150), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255),2)
+        # cv2.putText(image, f"Angle in x-direction: {angle[0]}", (100,100), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255),2)
+        # cv2.putText(image, f"Angle in y-direction: {angle[1]}", (100,150), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255),2)
         if global_coordinates[0] > 0.1 and not(regulation_start):
             print("Start Regulation")
             start_time_log = time.time()
@@ -175,6 +177,8 @@ def main():
                 info_csv_1 = [f"Posisjonering til lasten er 62,5 grade fra UR10, Y: -140 X: -55"]
                 info_csv_2 = [f"Kp_x:{Kp_x}, Kp_y:{Kp_y}, Kd_x:{Kd_x}, Kd_y:{Kd_y}, Ki_x: {Ki_x}, Ki_x: {Ki_y}, referance point {0.0276}, {-0.8846}"]
                 header = ["Time","X","Y","AngleX","AngleY","End_effector_X","End_effector_Y"]
+                pyautogui.hotkey('ctrl', 't')  # ctrl-v to paste
+
                 with open(path + '\X-Y-ulike_PID_{}.csv'.format(str(len(os.listdir(path)))), 'w',newline="") as f:
                     # create the csv writer
                     writer = csv.writer(f)

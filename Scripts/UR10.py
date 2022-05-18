@@ -4,7 +4,7 @@ import logging
 import rtde.rtde as rtde
 import rtde.rtde_config as rtde_config
 
-def initial_communiation(Robot_IP,Robot_Port,FREQUENCY):
+def initial_communiation(Robot_IP,Robot_Port,FREQUENCY,testing):
     ROBOT_HOST = Robot_IP
     ROBOT_PORT = Robot_Port
     config_filename = r'C:\Users\mateusz.jedynak\OneDrive - NTNU\Programmering\Python\Prosjekt\Bachelor\Source\Bachelor\Scripts\control_loop_configuration_simple.xml'
@@ -32,19 +32,23 @@ def initial_communiation(Robot_IP,Robot_Port,FREQUENCY):
     watchdog = con.send_input_setup(watchdog_names, watchdog_types)
 
     # ---------------------registers:-------------------------------
-    # setp.input_double_register_0 = 1.57
-    # setp.input_double_register_1 = -1.57
-    # setp.input_double_register_2 = 1.57
-    # setp.input_double_register_3 = -1.57
-    # setp.input_double_register_4 = -3.14
-    # setp.input_double_register_5 = 1.57
+    if testing == "pid":
 
-    setp.input_double_register_0 = 1.588424152240039    #91.01°
-    setp.input_double_register_1 = -1.240405499392370   #-71.07°
-    setp.input_double_register_2 = 1.191187214486130    #68.25°
-    setp.input_double_register_3 = -1.57                #-90°
-    setp.input_double_register_4 = -3.14                #-180°
-    setp.input_double_register_5 = 1.57                 #90
+        #Regulation with PID
+        setp.input_double_register_0 = 1.588424152240039    #91.01°
+        setp.input_double_register_1 = -1.240405499392370   #-71.07°
+        setp.input_double_register_2 = 1.191187214486130    #68.25°
+        setp.input_double_register_3 = -1.57                #-90°
+        setp.input_double_register_4 = -3.14                #-180°
+        setp.input_double_register_5 = 1.57                 #90
+      
+    if testing == "kinematic":
+        setp.input_double_register_0 = 1.6690087429152163          
+        setp.input_double_register_1 = -1.0156021332056562
+        setp.input_double_register_2 =  1.6942015789157032
+        setp.input_double_register_3 = -1.57                #-90°
+        setp.input_double_register_4 = -3.14                #-180°
+        setp.input_double_register_5 = 1.57                 #90
 
     setp.input_bit_registers0_to_31 = 0
 
