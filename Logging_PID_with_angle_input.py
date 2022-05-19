@@ -127,8 +127,8 @@ def main():
                 log_end_effector_x.append(pos_x+0.0276)
                 log_end_effector_y.append(pos_y-0.8846)
                 #End regulation after x-sec
-                # if endtime > 10:
-                #     running = True
+                if endtime > 10:
+                    running = True
             else:
                 if watchdog.input_int_register_0 != 4:
                     watchdog.input_int_register_0 = 4
