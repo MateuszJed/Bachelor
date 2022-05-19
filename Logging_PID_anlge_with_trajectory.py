@@ -31,7 +31,7 @@ path = r"C:\Users\mateusz.jedynak\OneDrive - NTNU\Programmering\Python\Prosjekt\
 def main():
     # Client has a few methods to get proxy to UA nodes that should always be in address space such as Root or Objects
     setp,con,watchdog,Init_pose = initial_communiation('169.254.182.10', 30004,500,"pid")
-    pyautogui.hotkey('ctrl', 'r')  # ctrl-c to copy
+    # pyautogui.hotkey('ctrl', 'r')  # ctrl-c to copy
 
     Kp_y, Kd_y, Ki_y = 0.5, 0.01,0.006
     Kp_x, Kd_x, Ki_x = 0.5, 0.01,0.006
@@ -177,7 +177,7 @@ def main():
                 info_csv_1 = [f"Posisjonering til lasten er 62,5 grade fra UR10, Y: -140 X: -55"]
                 info_csv_2 = [f"Kp_x:{Kp_x}, Kp_y:{Kp_y}, Kd_x:{Kd_x}, Kd_y:{Kd_y}, Ki_x: {Ki_x}, Ki_x: {Ki_y}, referance point {0.0276}, {-0.8846}"]
                 header = ["Time","X","Y","AngleX","AngleY","End_effector_X","End_effector_Y"]
-                pyautogui.hotkey('ctrl', 't')  # ctrl-v to paste
+                # pyautogui.hotkey('ctrl', 't')  # ctrl-v to paste
 
                 with open(path + '\X-Y-ulike_PID_{}.csv'.format(str(len(os.listdir(path)))), 'w',newline="") as f:
                     # create the csv writer

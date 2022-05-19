@@ -23,7 +23,7 @@ pipeline.start(config)
 def main():
     # Client has a few methods to get proxy to UA nodes that should always be in address space such as Root or Objects
     setp,con,watchdog,Init_pose = initial_communiation('169.254.182.10', 30004,500,"pid")
-    pyautogui.hotkey('ctrl', 'r')  # ctrl-c to copy
+    # pyautogui.hotkey('ctrl', 'r')  # ctrl-c to copy
     Kp_y, Kd_y, Ki_y = 0.5, 0.006,0.006
     Kp_x, Kd_x, Ki_x = 0.5, 0.005,0.006
     v_0_x,v_2_x,v_0_y,v_2_y,t_0,t_1,t_f = 0,0,0,0,0,1.5,0.75
@@ -109,7 +109,7 @@ def main():
                 con.send(watchdog)
                 con.send_pause()
                 con.disconnect()
-                pyautogui.hotkey('ctrl', 't')  # ctrl-c to copy
+                # pyautogui.hotkey('ctrl', 't')  # ctrl-c to copy
                 pipeline.stop()
                 break
         else:

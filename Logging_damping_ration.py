@@ -91,7 +91,7 @@ def main():
                     con.send(watchdog)  # sending mode == 4
             
             if keyboard.is_pressed("esc") or running:  # Break loop with ESC-key
-                pyautogui.hotkey('ctrl', 't')  # ctrl-c to copy
+                # pyautogui.hotkey('ctrl', 't')  # ctrl-c to copy
 
                 info_csv_1 = [f"Posisjonering til lasten er 62,5 grade fra UR10, Y: -140 X: -55"]
                 info_csv_2 = [f"Posisjonering til lasten er 62,5 grade fra UR10, Y: -140 X: -55"]
